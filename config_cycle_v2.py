@@ -1,6 +1,7 @@
 """
 Configuration file for Nikhil Market View - Cycle Dashboard v2
 Indicators with REGION dimension for US / Eurozone / Compare views
+Updated: CSV sources for Eurozone indicators
 """
 
 # =============================================================================

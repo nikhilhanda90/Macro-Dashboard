@@ -1,6 +1,7 @@
 """
 CSV Data Loader for Eurozone Indicators
 Handles various CSV formats from Eurostat, ECB, and Trading Economics
+Updated: Added mappings for all config series IDs
 """
 
 import pandas as pd
