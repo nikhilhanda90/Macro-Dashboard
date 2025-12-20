@@ -22,14 +22,19 @@ class CSVDataLoader:
         self.csv_mapping = {
             'EA_UNEMPLOYMENT': 'eurostat_unemployment_ea20.csv',
             'EA_EMPLOYMENT': 'eurostat_employment_ea20.csv',
+            'EA_EMPLOYMENT_RATE': 'eurostat_employment_ea20.csv',
             'EA_IP': 'eurostat_ip_ea20.csv',
             'EA_MFG_PMI': 'eurozone_mfg_pmi.csv',
             'EA_RETAIL': 'eurostat_retail_ea20.csv',
+            'EA19RETTOT01IXOBM': 'eurostat_retail_ea20.csv',
             'EA_HOUSE_PRICES': 'eurostat_house_prices_ea20.csv',
             'EA_ULC': 'eurostat_ulc_ea20.csv',
+            'EA_WAGE_GROWTH': 'eurostat_ulc_ea20.csv',
             'EA_COMPENSATION': 'ecb_compensation_ea.csv',
             'EA_HICP_HEADLINE': 'eurostat_hicp_headline_ea20.csv',
             'EA_INDUSTRIAL_CONF': 'eurostat_industrial_confidence_ea20.csv',
+            'EUROSTAT_ESI_EA': 'eurostat_industrial_confidence_ea20.csv',
+            'EUROSTAT_CCI_EA': 'eurostat_industrial_confidence_ea20.csv',
             'EA_YIELD_CURVE': 'ecb_yield_curve_full.csv',
         }
     
