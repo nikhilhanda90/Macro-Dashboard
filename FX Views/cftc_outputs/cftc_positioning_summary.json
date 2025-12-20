@@ -1,0 +1,14 @@
+{
+  "date": "2024-12-10",
+  "net_position": 45820,
+  "long": 125430,
+  "short": 79610,
+  "z_6m": 0.85,
+  "z_1y": 0.62,
+  "percentile": 68.5,
+  "positioning_state": "Neutral",
+  "commentary": "Positioning is neutral, suggesting limited crowding-related asymmetry.",
+  "last_updated": "2024-12-18 14:30:00",
+  "note": "Sample data - run cftc_positioning_simple.py to fetch live data"
+}
+

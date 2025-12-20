@@ -1,0 +1,39 @@
+{
+  "delta_z": {
+    "ridge": {
+      "name": "Ridge",
+      "hit_rate_test": 0.8181818181818182,
+      "hit_rate_high_z": 0.8571428571428571,
+      "rmse_test": 0.3837241444437864
+    },
+    "elasticnet": {
+      "name": "ElasticNet",
+      "hit_rate_test": 0.8181818181818182,
+      "hit_rate_high_z": 0.8571428571428571,
+      "rmse_test": 0.32716351963783397
+    },
+    "xgboost": {
+      "name": "XGBoost",
+      "hit_rate_test": 0.9090909090909091,
+      "hit_rate_high_z": 0.8571428571428571,
+      "rmse_test": 0.43055367330726435
+    }
+  },
+  "binary": {
+    "ridge": {
+      "name": "Ridge",
+      "accuracy_test": 0.5454545454545454,
+      "accuracy_high_z": 0.5714285714285714
+    },
+    "elasticnet": {
+      "name": "ElasticNet",
+      "accuracy_test": 0.45454545454545453,
+      "accuracy_high_z": 0.7142857142857143
+    },
+    "xgboost": {
+      "name": "XGBoost",
+      "accuracy_test": 0.7272727272727273,
+      "accuracy_high_z": 0.8571428571428571
+    }
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "ridge": {
+    "name": "Ridge Baseline",
+    "r2_test": 0.19875375096090564,
+    "rmse_test": 0.045346556252581015,
+    "sigma": 0.04160953616478589,
+    "regime_train": {
+      "in_line_pct": 0.7380952380952381,
+      "stretch_pct": 0.2222222222222222,
+      "break_pct": 0.03968253968253968
+    },
+    "stability": {
+      "mean_abs_change": 0.0073303868002375944,
+      "max_monthly_jump": 0.03757106780997432,
+      "change_std": 0.009722469103255712
+    }
+  },
+  "lasso": {
+    "name": "Lasso",
+    "r2_test": 0.20504738162323055,
+    "rmse_test": 0.04516811103777991,
+    "sigma": 0.043891829644202005,
+    "regime_train": {
+      "in_line_pct": 0.746031746031746,
+      "stretch_pct": 0.2222222222222222,
+      "break_pct": 0.031746031746031744
+    },
+    "stability": {
+      "mean_abs_change": 0.004818568691247225,
+      "max_monthly_jump": 0.035666778067214855,
+      "change_std": 0.007231325709458947
+    }
+  },
+  "elasticnet": {
+    "name": "ElasticNet",
+    "r2_test": 0.45465020165354875,
+    "rmse_test": 0.03741096276260168,
+    "sigma": 0.028462466245525144,
+    "regime_train": {
+      "in_line_pct": 0.6507936507936508,
+      "stretch_pct": 0.30952380952380953,
+      "break_pct": 0.03968253968253968
+    },
+    "stability": {
+      "mean_abs_change": 0.0106622393143375,
+      "max_monthly_jump": 0.04859673734696668,
+      "change_std": 0.013601476257368683
+    }
+  },
+  "xgboost_single": {
+    "name": "XGBoost Single-Stage",
+    "r2_test": -0.02680942443691614,
+    "rmse_test": 0.05133413275969694,
+    "sigma": 0.06232492531815316,
+    "regime_train": {
+      "in_line_pct": 0.753968253968254,
+      "stretch_pct": 0.1984126984126984,
+      "break_pct": 0.047619047619047616
+    },
+    "stability": {
+      "mean_abs_change": 0.0,
+      "max_monthly_jump": 0.0,
+      "change_std": 0.0
+    }
+  },
+  "twostage": {
+    "name": "Two-Stage (Ridge + XGB Residual)",
+    "r2_test": 0.19875375136074802,
+    "rmse_test": 0.045346556241266475,
+    "sigma": 0.04160953616478589,
+    "regime_train": {
+      "in_line_pct": 0.7380952380952381,
+      "stretch_pct": 0.2222222222222222,
+      "break_pct": 0.03968253968253968
+    },
+    "stability": {
+      "mean_abs_change": 0.0073303868002375944,
+      "max_monthly_jump": 0.03757106780997432,
+      "change_std": 0.009722469103255712
+    }
+  }
+}

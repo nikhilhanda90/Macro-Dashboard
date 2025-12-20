@@ -1,0 +1,18 @@
+{
+  "target": "delta_z",
+  "model_key": "xgboost",
+  "model_name": "XGBoost",
+  "score": 0.9090909090909091,
+  "metrics": {
+    "delta_z_best": {
+      "model": "XGBoost",
+      "hit_rate_test": 0.9090909090909091,
+      "hit_rate_high_z": 0.8571428571428571
+    },
+    "binary_best": {
+      "model": "XGBoost",
+      "accuracy_test": 0.7272727272727273,
+      "accuracy_high_z": 0.8571428571428571
+    }
+  }
+}
