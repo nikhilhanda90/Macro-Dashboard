@@ -1,0 +1,163 @@
+================================================================================
+📥 EUROZONE DATA - DOWNLOAD CHECKLIST
+================================================================================
+
+Save all CSV files to this folder: C:\Users\NikhilHanda\eurozone_data\
+
+Complete all 11 downloads for full US-Eurozone parity.
+
+================================================================================
+MUST-HAVE (7 files)
+================================================================================
+
+[ ] 1. UNEMPLOYMENT RATE
+    Source: Eurostat
+    URL: https://ec.europa.eu/eurostat/databrowser/view/UNE_RT_M/default/table
+    Settings:
+      - Geography: EA20 (Euro Area 20)
+      - Age: Total
+      - Sex: Total
+      - Unit: Percentage of active population
+      - Adjustment: Seasonally adjusted
+    Save as: eurostat_unemployment_ea20.csv
+
+[ ] 2. EMPLOYMENT LEVEL
+    Source: Eurostat
+    URL: https://ec.europa.eu/eurostat/databrowser/view/LFSQ_EGAN/default/table
+    Settings:
+      - Geography: EA20
+      - Age: Total
+      - Sex: Total
+      - Unit: Thousands of persons
+      - Adjustment: Seasonally adjusted
+    Save as: eurostat_employment_ea20.csv
+
+[ ] 3. INDUSTRIAL PRODUCTION
+    Source: Eurostat
+    URL: https://ec.europa.eu/eurostat/databrowser/view/STS_INPR_M/default/table
+    Settings:
+      - Geography: EA20
+      - Industry: Total industry (B-D)
+      - Unit: Index (2021=100)
+      - Indicator: Production volume
+      - Adjustment: Seasonally and calendar adjusted
+    Save as: eurostat_ip_ea20.csv
+
+[ ] 4. MANUFACTURING PMI
+    Source: Trading Economics (easier than S&P Global)
+    URL: https://tradingeconomics.com/euro-area/manufacturing-pmi
+    Instructions:
+      - Click "Download" button (right side)
+      - Select CSV format
+      - Choose "All data" or "Last 10 years"
+    Save as: eurozone_mfg_pmi.csv
+
+[ ] 5. RETAIL TRADE VOLUME
+    Source: Eurostat
+    URL: https://ec.europa.eu/eurostat/databrowser/view/STS_TRTU_M/default/table
+    Settings:
+      - Geography: EA20
+      - Product: Retail trade, except motor vehicles (G47)
+      - Unit: Index (2021=100)
+      - Indicator: Volume of sales
+      - Adjustment: Seasonally and calendar adjusted
+    Save as: eurostat_retail_ea20.csv
+
+[ ] 6. HOUSE PRICE INDEX
+    Source: Eurostat
+    URL: https://ec.europa.eu/eurostat/databrowser/view/PRC_HPI_Q/default/table
+    Settings:
+      - Geography: EA20
+      - Purchase: Total (new + existing dwellings)
+      - Unit: Index (2015=100)
+      - Adjustment: Seasonally adjusted
+    Save as: eurostat_house_prices_ea20.csv
+
+[ ] 7. UNIT LABOR COSTS
+    Source: Eurostat
+    URL: https://ec.europa.eu/eurostat/databrowser/view/NAMA_10_ULC/default/table
+    Settings:
+      - Geography: EA20
+      - Unit: Index (2021=100)
+      - Adjustment: Seasonally adjusted
+    Save as: eurostat_ulc_ea20.csv
+
+================================================================================
+NICE-TO-HAVE (4 files)
+================================================================================
+
+[ ] 8. WAGE GROWTH / COMPENSATION
+    Source: ECB Statistical Data Warehouse
+    URL: https://sdw.ecb.europa.eu/browse.do?node=9691113
+    Look for: "Compensation per employee - Euro Area"
+    Settings:
+      - Geography: Euro Area
+      - Frequency: Quarterly
+      - Adjustment: Seasonally adjusted
+    Save as: ecb_compensation_ea.csv
+
+[ ] 9. HICP HEADLINE INFLATION
+    Source: Eurostat
+    URL: https://ec.europa.eu/eurostat/databrowser/view/PRC_HICP_MIDX/default/table
+    Settings:
+      - Geography: EA20
+      - COICOP: All items (CP00)
+      - Unit: Index (2015=100)
+    Save as: eurostat_hicp_headline_ea20.csv
+
+[ ] 10. INDUSTRIAL CONFIDENCE
+    Source: Eurostat
+    URL: https://ec.europa.eu/eurostat/databrowser/view/EI_BSIN_M_R2/default/table
+    Settings:
+      - Geography: EA20
+      - Adjustment: Seasonally adjusted
+    Save as: eurostat_industrial_confidence_ea20.csv
+
+[ ] 11. FULL YIELD CURVE (1Y-30Y)
+    Source: ECB Statistical Data Warehouse
+    URL: https://data.ecb.europa.eu/data/datasets/YC/YC.B.U2.EUR.4F.G_N_A.SV_C_YM
+    Instructions:
+      - Click "Download" (top right)
+      - Select: All available maturities
+      - Period: Last 10 years
+      - Format: CSV
+    Save as: ecb_yield_curve_full.csv
+
+================================================================================
+QUICK TIPS
+================================================================================
+
+For Eurostat downloads:
+  1. On the dataset page, select your filters (geography, time, etc.)
+  2. Click the "Download" icon (arrow pointing down)
+  3. Choose "Full extraction" and "CSV" format
+  4. Click "Download"
+
+For Trading Economics:
+  1. Scroll to the chart
+  2. Click "Download" button on the right
+  3. Select CSV
+  4. May require free account (30 seconds to create)
+
+For ECB SDW:
+  1. Navigate to the dataset
+  2. Use "Export" or "Download" option
+  3. Select CSV format
+  4. Choose time range (last 10 years is good)
+
+================================================================================
+ESTIMATED TIME: 15-20 minutes total
+================================================================================
+
+Once complete, you'll have:
+  - 11 CSV files in C:\Users\NikhilHanda\eurozone_data\
+  - Ready for integration into dashboard
+  - Eurozone coverage: 9 → 20+ indicators
+
+================================================================================
+WHEN DONE: Just say "CSV files ready" and I'll integrate them!
+================================================================================
+
+
+
+
