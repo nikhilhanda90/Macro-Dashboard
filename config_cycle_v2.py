@@ -434,10 +434,8 @@ INDICATORS = {
         'description': "The Eurozone's mood ring — business and consumer confidence in one number.",
         'indicator_type': 'Leading',
         'region': 'Eurozone',
-        'source': 'eurostat_v2',
-        'eurostat_dataset': 'EI_BSSI_M_R2',
-        'eurostat_geo': 'EA20',
-        'eurostat_filters': {},
+        'source': 'csv',
+        'csv_file': 'eurozone_data/eurostat_industrial_confidence_ea20.csv',
         'interpretation_notes': 'Downtrends precede investment slowdowns. Stabilization after declines often marks late-cycle pauses, not recoveries.'
     },
     'EUROSTAT_CCI_EA': {
@@ -447,10 +445,8 @@ INDICATORS = {
         'description': 'The household gut check — whether consumers are bracing or spending.',
         'indicator_type': 'Leading',
         'region': 'Eurozone',
-        'source': 'eurostat_v2',
-        'eurostat_dataset': 'EI_BSCO_M',
-        'eurostat_geo': 'EA20',
-        'eurostat_filters': {},
+        'source': 'csv',
+        'csv_file': 'eurozone_data/eurostat_industrial_confidence_ea20.csv',
         'interpretation_notes': 'Level matters less than direction. Sustained weakness = demand risk. Sharp drops = early recession signal.'
     },
     
@@ -466,9 +462,8 @@ INDICATORS = {
         'indicator_type': 'Coincident',
         'inverted': True,
         'region': 'Eurozone',
-        'source': 'eurostat_v2',
-        'eurostat_dataset': 'une_rt_m',
-        'eurostat_geo': 'EA20',
+        'source': 'csv',
+        'csv_file': 'eurozone_data/eurostat_unemployment_ea20.csv',
         'eurostat_filters': {'s_adj': 'SA', 'age': 'TOTAL', 'sex': 'T', 'unit': 'PC_ACT'},
         'use_yoy': False
     },
@@ -479,10 +474,8 @@ INDICATORS = {
         'description': 'Euro Area employment rate (% of population 15-64, Eurostat)',
         'indicator_type': 'Coincident',
         'region': 'Eurozone',
-        'source': 'eurostat_v2',
-        'eurostat_dataset': 'lfsi_emp_q',
-        'eurostat_geo': 'EA20',
-        'eurostat_filters': {'s_adj': 'SA', 'age': 'Y15-64', 'sex': 'T', 'unit': 'PC_POP', 'indic_em': 'EMP_LFS'},
+        'source': 'csv',
+        'csv_file': 'eurozone_data/eurostat_employment_ea20.csv',
         'use_yoy': False
     },
     # Growth - Use Germany (more reliable data)
@@ -504,7 +497,8 @@ INDICATORS = {
         'description': 'Euro Area retail trade volume index',
         'indicator_type': 'Coincident',
         'region': 'Eurozone',
-        'source': 'fred',
+        'source': 'csv',
+        'csv_file': 'eurozone_data/eurostat_retail_ea20.csv',
         'use_yoy': True,  # Index - use YoY
         'use_mom': False
     },
@@ -552,10 +546,8 @@ INDICATORS = {
         'description': 'Euro Area labor cost index - hourly costs (Eurostat)',
         'indicator_type': 'Lagging',
         'region': 'Eurozone',
-        'source': 'eurostat_v2',
-        'eurostat_dataset': 'lc_lci_r2_q',
-        'eurostat_geo': 'EA20',
-        'eurostat_filters': {'s_adj': 'SCA', 'nace_r2': 'B-S', 'lcstruct': 'D1_D4_MD5', 'unit': 'I20'},
+        'source': 'csv',
+        'csv_file': 'eurozone_data/eurostat_ulc_ea20.csv',
         'use_yoy': True,  # Index - use YoY for percentile/trend
         'use_mom': False
     },
