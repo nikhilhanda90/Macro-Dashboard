@@ -24,6 +24,15 @@ class CSVDataLoader:
             csv_directory = Path(__file__).parent / "eurozone_data"
         self.csv_dir = str(csv_directory)
         
+        # DEBUG: Log the path being used
+        print(f"[CSV_LOADER] Initializing with directory: {self.csv_dir}")
+        print(f"[CSV_LOADER] Directory exists: {os.path.exists(self.csv_dir)}")
+        if os.path.exists(self.csv_dir):
+            files = os.listdir(self.csv_dir)
+            print(f"[CSV_LOADER] Found {len(files)} files in directory")
+        else:
+            print(f"[CSV_LOADER] WARNING: Directory does not exist!")
+        
         # Mapping of indicator IDs to CSV files
         self.csv_mapping = {
             'EA_UNEMPLOYMENT': 'eurostat_unemployment_ea20.csv',
