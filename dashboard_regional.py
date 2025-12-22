@@ -27,6 +27,25 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# DEBUG: Check CSV loader status
+try:
+    from csv_data_loader import CSVDataLoader
+    import os
+    from pathlib import Path
+    
+    loader = CSVDataLoader()
+    csv_dir = loader.csv_dir
+    exists = os.path.exists(csv_dir)
+    file_count = len(os.listdir(csv_dir)) if exists else 0
+    
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("**🔍 CSV Debug Info**")
+    st.sidebar.code(f"Path: {csv_dir}")
+    st.sidebar.code(f"Exists: {exists}")
+    st.sidebar.code(f"Files: {file_count}")
+except Exception as e:
+    st.sidebar.error(f"CSV Debug Error: {e}")
+
 def format_indicator_value(series_id, raw_value):
     """
     Format indicator values for display based on their type.
