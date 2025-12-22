@@ -3,32 +3,23 @@ FX Insights - EURUSD Analysis
 Nikhil's comprehensive FX view with Valuation, Technicals, and Positioning
 """
 import streamlit as st
+import streamlit.components.v1 as components
+import sys
+from pathlib import Path
+import json
+import pandas as pd
+import plotly.graph_objects as go
+from PIL import Image
 
-# Page config FIRST (must be before any other Streamlit commands)
+# Add parent directory to path
+sys.path.append(str(Path(__file__).parent.parent))
+
+# Page config
 st.set_page_config(
     page_title="FX Insights - Nikhil Dashboard",
     page_icon="💱",
     layout="wide"
 )
-
-# Wrap ALL imports in try/except to catch errors
-try:
-    import streamlit.components.v1 as components
-    import sys
-    from pathlib import Path
-    import json
-    import pandas as pd
-    import plotly.graph_objects as go
-    from PIL import Image
-
-    # Add parent directory to path
-    sys.path.append(str(Path(__file__).parent.parent))
-    
-    st.success("✅ Imports successful")
-    
-except Exception as e:
-    st.error(f"❌ IMPORT ERROR: {e}")
-    st.stop()
 
 # =====================================================================
 # TECHNICAL INDICATOR EXPLAINERS
@@ -541,38 +532,17 @@ def load_technical_analysis():
     except Exception as e:
         return None
 
-# Load data with error handling
-try:
-    decision = load_fx_views_decision()
-except Exception as e:
-    st.error(f"⚠️ Decision data failed: {e}")
-    decision = None
-
-try:
-    charts = load_fx_views_charts()
-except Exception as e:
-    st.error(f"⚠️ Charts failed: {e}")
-    charts = None
-
-try:
-    cftc_summary, cftc_history = load_cftc_positioning()
-except Exception as e:
-    st.error(f"⚠️ CFTC data failed: {e}")
-    cftc_summary, cftc_history = None, None
-
-try:
-    technical = load_technical_analysis()
-except Exception as e:
-    st.error(f"⚠️ Technical data failed: {e}")
-    technical = None
+# Load data
+decision = load_fx_views_decision()
+charts = load_fx_views_charts()
+cftc_summary, cftc_history = load_cftc_positioning()
+technical = load_technical_analysis()
 
 # =====================================================================
 # HEADER
 # =====================================================================
-st.write("🔍 DEBUG: Rendering header...")
 st.markdown('<h1 class="fx-title">💱 FX Insights</h1>', unsafe_allow_html=True)
 st.markdown('<p class="fx-subtitle">EURUSD • Valuation, Technicals & Positioning</p>', unsafe_allow_html=True)
-st.write("🔍 DEBUG: Header rendered")
 
 # =====================================================================
 # NIKHIL'S FX COMMENTARY (TOP - Synthesis)
@@ -597,11 +567,9 @@ st.markdown("""
 # =====================================================================
 # HORIZONTAL TABS
 # =====================================================================
-st.write("🔍 DEBUG: About to create tabs...")
 st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
 
 tab1, tab2, tab3 = st.tabs(["📈 VALUATION", "📊 TECHNICALS", "🎯 POSITIONING"])
-st.write("🔍 DEBUG: Tabs created")
 
 # =====================================================================
 # TAB 1: VALUATION
@@ -809,4 +777,591 @@ with tab1:
     else:
         st.warning("Valuation data not available. Run FX Views generation script.")
 
-# (Due to character limits, I need to stop here. Use GitHub Desktop to push the complete file already in the working directory)
+# =====================================================================
+# TAB 2: TECHNICALS
+# =====================================================================
+with tab2:
+    if technical:
+        score = technical['technical_score']
+        structure_score = technical.get('structure_score', 0)
+        momentum_score = technical.get('momentum_score', 0)
+        vol_bonus = technical.get('vol_bonus', 0)
+        confirmation_status = technical.get('confirmation_status', 'not_confirmed')
+        risk_flags = technical.get('risk_flags', [])
+        regime = technical['regime']
+        indicators = technical.get('indicators', {})
+        
+        # ==================================================================
+        # NIKHIL'S VIEW ON TECHNICALS — Commentary (TOP)
+        # ==================================================================
+        st.markdown(f"""
+        <div style='background: rgba(0, 123, 255, 0.1); border-left: 4px solid #007BFF; 
+                    padding: 1.5rem 2rem; margin: 0 0 2rem 0; border-radius: 8px;'>
+            <div style='color: #007BFF; font-weight: 700; font-size: 0.9rem; text-transform: uppercase; 
+                        letter-spacing: 0.08em; margin-bottom: 0.75rem;'>💬 Nikhil's View on Technicals</div>
+            <div style='color: #FFFFFF; font-size: 1.05rem; line-height: 1.7; font-weight: 400;'>
+                EUR's technical setup is constructive but unconfirmed. Price holds above the 200-day moving average, 
+                RSI is overbought, and momentum indicators show mixed follow-through. Volatility is compressed, 
+                signaling a potential breakout ahead. Watch key resistance levels—confirmation requires a sustained 
+                break with expanding volume. Until then, this is a wait-for-confirmation trade, not a chase.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # ==================================================================
+        # TECHNICALS SNAPSHOT — State Detection
+        # ==================================================================
+        st.markdown("### 📊 Technical Snapshot — EURUSD")
+        
+        # Determine trend signal
+        spot = technical['spot']
+        sma_200 = indicators.get('SMA_200', 0)
+        trend_signal = "Above 200d MA" if spot > sma_200 else "Below 200d MA"
+        trend_read = "Medium-term uptrend intact" if spot > sma_200 else "Medium-term downtrend"
+        
+        # Determine momentum label from NORMALIZED momentum_score (M_norm)
+        M_norm_snapshot = momentum_score / 3.0  # Normalize for snapshot display
+        if M_norm_snapshot > 0.33:
+            momentum_signal = "Positive"
+        elif M_norm_snapshot < -0.33:
+            momentum_signal = "Negative"
+        else:
+            momentum_signal = "Mixed"
+        
+        # Add risk qualifier if present (risk flags are separate from momentum state)
+        if "Overbought" in risk_flags:
+            momentum_signal += " ⚠️"  # Visual flag, not part of momentum label
+        elif "Oversold" in risk_flags:
+            momentum_signal += " ⚠️"
+        
+        momentum_read = "Strong follow-through" if M_norm_snapshot > 0.5 else "No strong follow-through" if M_norm_snapshot > -0.5 else "Losing momentum"
+        
+        # Determine volatility signal
+        percentiles = technical.get('percentiles', {})
+        bb_width_pct = percentiles.get('bb_width_pct', 50)
+        if bb_width_pct < 30:
+            vol_signal = "Compressed"
+            vol_read = "Break risk rising"
+        elif bb_width_pct > 70:
+            vol_signal = "Expanded"
+            vol_read = "High volatility regime"
+        else:
+            vol_signal = "Normal"
+            vol_read = "Range conditions"
+        
+        # Build technical snapshot
+        tech_snapshot_data = {
+            'Dimension': [
+                'Trend',
+                'Momentum',
+                'Volatility',
+                'Technical Regime'
+            ],
+            'Signal': [
+                trend_signal,
+                momentum_signal,
+                vol_signal,
+                regime
+            ],
+            'Read': [
+                trend_read,
+                momentum_read,
+                vol_read,
+                'Range → Break Setup' if regime == 'Neutral' else regime + ' bias'
+            ]
+        }
+        
+        df_tech_snapshot = pd.DataFrame(tech_snapshot_data)
+        
+        # Render technical snapshot table
+        table_html = '<table class="snapshot-table"><thead><tr>'
+        for col in df_tech_snapshot.columns:
+            table_html += f'<th>{col}</th>'
+        table_html += '</tr></thead><tbody>'
+        
+        for _, row in df_tech_snapshot.iterrows():
+            table_html += '<tr>'
+            table_html += f'<td>{row["Dimension"]}</td>'
+            table_html += f'<td class="read-col">{row["Signal"]}</td>'
+            table_html += f'<td>{row["Read"]}</td>'
+            table_html += '</tr>'
+        table_html += '</tbody></table>'
+        
+        st.markdown(table_html, unsafe_allow_html=True)
+        
+        # ==================================================================
+        # SCORE VISUALIZATION — Directional Bias
+        # ==================================================================
+        st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+        
+        # Calculate NORMALIZED drivers (MUST match score calculation logic)
+        S_norm = structure_score / 2.5  # Structure normalized to [-1, +1]
+        M_norm = momentum_score / 3.0   # Momentum normalized to [-1, +1]
+        
+        # VALIDATION: Ensure drivers are consistent with score
+        # If score is non-zero, at least one normalized driver must be non-zero
+        if abs(score) > 0.1:  # Non-zero score
+            if abs(S_norm) < 0.01 and abs(M_norm) < 0.01:  # Both drivers are zero
+                st.error("⚠️ Technical Score Bug: Non-zero score with zero drivers. This is a data integrity issue.")
+        
+        # Determine score color and subtitle based on score AND confirmation
+        score_color = '#00A676' if score > 0 else '#EF4444' if score < 0 else '#888888'
+        
+        # Dynamic subtitle - standardized confirmation phrases
+        if score >= 1.5:
+            subtitle = "Bullish, confirmed" if confirmation_status == "confirmed" else "Constructive, not confirmed"
+        elif score <= -1.5:
+            subtitle = "Bearish, confirmed" if confirmation_status == "confirmed" else "Bearish bias, watch confirmation"
+        else:
+            subtitle = "Range conditions"
+        
+        # Generate text-based drivers for clarity
+        if abs(S_norm) > 0.6:
+            structure_text = "strong" if S_norm > 0 else "weak"
+        elif abs(S_norm) > 0.3:
+            structure_text = "leaning bullish" if S_norm > 0 else "leaning bearish"
+        else:
+            structure_text = "neutral"
+        
+        if abs(M_norm) > 0.6:
+            momentum_text = "supportive" if M_norm > 0 else "fading"
+        elif abs(M_norm) > 0.3:
+            momentum_text = "positive" if M_norm > 0 else "negative"
+        else:
+            momentum_text = "mixed"
+        
+        # Create a proper visual card with driver breakdown
+        st.markdown(f"""
+        <div style='max-width: 600px; margin: 2rem auto; text-align: center;'>
+            <div style='color: #888888; font-size: 0.85rem; text-transform: uppercase; 
+                        letter-spacing: 0.05em; margin-bottom: 1rem;'>
+                Technical Score
+            </div>
+            <div style='background: linear-gradient(135deg, #242b3d 0%, #1a1f2e 100%); 
+                        border: 2px solid {score_color}; border-radius: 16px; 
+                        padding: 2rem; box-shadow: 0 0 20px {score_color}40;'>
+                <div style='color: {score_color}; font-size: 4rem; font-weight: 700; 
+                            font-family: "Courier New", monospace; text-shadow: 0 0 15px {score_color}60;'>
+                    {score:+.1f}
+                </div>
+                <div style='color: #888888; font-size: 0.9rem; margin-top: 0.5rem;'>
+                    Range: -3 to +3
+                </div>
+                <div style='color: #888888; font-size: 0.85rem; margin-top: 1rem; opacity: 0.8;'>
+                    Drivers: Structure {structure_text}, Momentum {momentum_text} → Score {score:+.1f}
+                </div>
+            </div>
+            <div style='color: #d0d0d0; font-size: 1.05rem; font-style: italic; margin-top: 1rem;'>
+                {subtitle}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Show risk flags if any
+        if risk_flags:
+            flags_pills = " ".join([f'<span style="background: rgba(255,68,68,0.2); color: #ff4444; padding: 0.3rem 0.6rem; border-radius: 12px; font-size: 0.8rem; margin: 0 0.25rem;">{flag}</span>' for flag in risk_flags])
+            st.markdown(f"""
+            <div style='text-align: center; margin-top: 0.5rem; margin-bottom: 1rem;'>
+                {flags_pills}
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Add "View changes if..." trigger line
+        key_levels_list = technical.get('key_levels', [])
+        if key_levels_list:
+            # Find nearest resistance and support
+            resistances = [l for l in key_levels_list if l['type'] == 'Resistance']
+            supports = [l for l in key_levels_list if l['type'] == 'Support']
+            
+            nearest_resistance = min(resistances, key=lambda x: abs(x['distance_pct'])) if resistances else None
+            nearest_support = min(supports, key=lambda x: abs(x['distance_pct'])) if supports else None
+            
+            if nearest_resistance and nearest_support:
+                trigger_text = f"Score upgrades if break above {nearest_resistance['name']} ({nearest_resistance['price']:.4f}); downgrades if break below {nearest_support['name']} ({nearest_support['price']:.4f})."
+            elif nearest_resistance:
+                trigger_text = f"Score upgrades if break above {nearest_resistance['name']} ({nearest_resistance['price']:.4f})."
+            elif nearest_support:
+                trigger_text = f"Score downgrades if break below {nearest_support['name']} ({nearest_support['price']:.4f})."
+            else:
+                trigger_text = ""
+            
+            if trigger_text:
+                st.markdown(f"""
+                <div style='text-align: center; margin-top: 0.5rem; margin-bottom: 2rem;'>
+                    <div style='color: #888888; font-size: 0.85rem; font-style: italic;'>
+                        ⚡ {trigger_text}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        # ==================================================================
+        # ONE PRICE CHART — Visual Truth
+        # ==================================================================
+        st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+        st.markdown("### 📈 Price Chart")
+        
+        chart_path = Path(__file__).parent.parent / 'FX Views' / 'technical_outputs' / 'eurusd_technical_chart.html'
+        if chart_path.exists():
+            with open(chart_path, 'r', encoding='utf-8') as f:
+                chart_html = f.read()
+            components.html(chart_html, height=1000, scrolling=True)
+        else:
+            st.info("📊 **Candlestick chart available after running technical generator**")
+        
+        # ==================================================================
+        # KEY LEVELS — Decision Triggers
+        # ==================================================================
+        st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+        st.markdown("### 🎯 Key Levels — What Matters if Price Moves")
+        
+        levels = technical.get('key_levels', [])
+        
+        # Generate dynamic levels commentary
+        if levels:
+            # Determine trend_state from regime
+            trend_state = regime.lower() if regime in ['Bullish', 'Bearish'] else 'neutral'
+            
+            levels_context = {
+                'spot': spot,
+                'trend_state': trend_state,
+                'confirmation_status': confirmation_status,
+                'key_levels': levels
+            }
+            
+            levels_commentary = get_technical_levels_commentary(levels_context)
+            
+            st.markdown(f"""
+            <div style='background: rgba(0, 123, 255, 0.1); border-left: 4px solid #007BFF; 
+                        padding: 1.25rem; margin: 0 0 1.5rem 0; border-radius: 4px;'>
+                <div style='color: #d0d0d0; font-size: 1rem; line-height: 1.7;'>
+                    {levels_commentary}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        if levels:
+            for level in levels[:5]:  # Top 5 only
+                level_type_color = '#00A676' if level['type'] == 'Support' else '#EF4444'
+                level_icon = '↑' if level['type'] == 'Resistance' else '↓'
+                dist_sign = '+' if level['distance_pct'] > 0 else ''
+                
+                # Determine what it means
+                if level['type'] == 'Resistance':
+                    meaning = "Break = trend acceleration" if '200d' in level['name'] or 'High' in level['name'] else "Upside trigger"
+                else:
+                    meaning = "Trend line in sand" if '200d' in level['name'] else "Near-term support"
+                
+                st.markdown(f"""
+                <div style="background: rgba(26, 31, 46, 0.5); border-left: 4px solid {level_type_color}; 
+                            border-radius: 4px; padding: 1rem; margin-bottom: 0.75rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="flex: 1;">
+                            <span style="color: #FFFFFF; font-family: 'Courier New', monospace; font-size: 1.15rem; font-weight: 700;">
+                                {level['price']:.4f}
+                            </span>
+                            <span style="color: {level_type_color}; font-size: 0.9rem; margin-left: 0.75rem;">
+                                {level_icon} {level['name']}
+                            </span>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="color: #888888; font-size: 0.85rem;">
+                                {dist_sign}{level['distance_pct']:.2f}%
+                            </div>
+                            <div style="color: #d0d0d0; font-size: 0.9rem; font-style: italic;">
+                                {meaning}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        # ==================================================================
+        # INDICATOR CHECK — Confirmation
+        # ==================================================================
+        st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+        st.markdown("### ✓ Indicator Check")
+        st.markdown('<p style="color: #888888; font-size: 0.9rem; margin-bottom: 1.5rem;">Confirmation / Divergence signals</p>', unsafe_allow_html=True)
+        
+        # Get indicator values
+        rsi = indicators.get('RSI', 0)
+        macd = indicators.get('MACD', 0)
+        macd_hist = indicators.get('MACD', 0) - indicators.get('MACD_Signal', 0) if indicators.get('MACD_Signal') else 0
+        macd_hist_prev = 0  # Would need to calculate from data
+        bb_width_pct = technical['percentiles'].get('bb_width_pct', 0)
+        atr_pct = technical['percentiles'].get('atr_pct', 0)
+        
+        # Generate dynamic explainers
+        rsi_explainer = get_rsi_explainer(rsi)
+        macd_explainer = get_macd_explainer(macd_hist, macd_hist_prev)
+        bb_explainer = get_bb_explainer(bb_width_pct)
+        atr_explainer = get_atr_explainer(atr_pct)
+        
+        # RSI Panel
+        rsi_signal = "Overbought" if rsi > 70 else "Oversold" if rsi < 30 else "Neutral"
+        rsi_color = "#ff4444" if rsi > 70 else "#00A676" if rsi < 30 else "#888888"
+        
+        st.markdown(f"""
+        <div style="background: rgba(26, 31, 46, 0.5); border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <div style="color: #FFFFFF; font-weight: 700; font-size: 1rem;">RSI (14)</div>
+                <div style="color: {rsi_color}; font-weight: 600; font-size: 1.1rem;">{rsi:.1f}</div>
+            </div>
+            <div style="color: #888888; font-size: 0.85rem; font-style: italic; margin-bottom: 0.5rem;">
+                {rsi_explainer}
+            </div>
+            <div style="color: {rsi_color}; font-size: 0.9rem; font-weight: 600;">
+                → {rsi_signal}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # MACD Panel
+        macd_signal = "Positive momentum" if macd > 0 else "Negative momentum" if macd < 0 else "No thrust"
+        macd_color = "#00A676" if macd > 0 else "#ff4444" if macd < 0 else "#888888"
+        
+        st.markdown(f"""
+        <div style="background: rgba(26, 31, 46, 0.5); border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <div style="color: #FFFFFF; font-weight: 700; font-size: 1rem;">MACD</div>
+                <div style="color: {macd_color}; font-weight: 600; font-size: 1.1rem;">{macd:.4f}</div>
+            </div>
+            <div style="color: #888888; font-size: 0.85rem; font-style: italic; margin-bottom: 0.5rem;">
+                {macd_explainer}
+            </div>
+            <div style="color: {macd_color}; font-size: 0.9rem; font-weight: 600;">
+                → {macd_signal}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Bollinger Width Panel
+        bb_signal = "Coiled" if bb_width_pct < 20 else "Expanding" if bb_width_pct > 70 else "Normal"
+        bb_color = "#007BFF" if bb_width_pct < 20 else "#ff4444" if bb_width_pct > 80 else "#888888"
+        
+        st.markdown(f"""
+        <div style="background: rgba(26, 31, 46, 0.5); border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <div style="color: #FFFFFF; font-weight: 700; font-size: 1rem;">Bollinger Width</div>
+                <div style="color: {bb_color}; font-weight: 600; font-size: 1.1rem;">{bb_width_pct:.0f}%ile</div>
+            </div>
+            <div style="color: #888888; font-size: 0.85rem; font-style: italic; margin-bottom: 0.5rem;">
+                {bb_explainer}
+            </div>
+            <div style="color: {bb_color}; font-size: 0.9rem; font-weight: 600;">
+                → {bb_signal}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # ATR Panel (optional but recommended)
+        atr = indicators.get('ATR', 0)
+        atr_signal = "Exhaustion risk" if atr_pct > 70 else "Coiled" if atr_pct < 30 else "Moderate"
+        atr_color = "#ff4444" if atr_pct > 70 else "#007BFF" if atr_pct < 30 else "#888888"
+        
+        st.markdown(f"""
+        <div style="background: rgba(26, 31, 46, 0.5); border-radius: 8px; padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <div style="color: #FFFFFF; font-weight: 700; font-size: 1rem;">ATR (20)</div>
+                <div style="color: {atr_color}; font-weight: 600; font-size: 1.1rem;">{atr:.4f} ({atr_pct:.0f}%ile)</div>
+            </div>
+            <div style="color: #888888; font-size: 0.85rem; font-style: italic; margin-bottom: 0.5rem;">
+                {atr_explainer}
+            </div>
+            <div style="color: {atr_color}; font-size: 0.9rem; font-weight: 600;">
+                → {atr_signal}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    else:
+        st.warning("Technical analysis data not available. Run: `py eurusd_technicals.py`")
+
+# =====================================================================
+# TAB 3: POSITIONING
+# =====================================================================
+with tab3:
+    
+    if cftc_summary:
+        # ==================================================================
+        # POSITIONING SNAPSHOT — Risk Contribution
+        # ==================================================================
+        st.markdown("### 📊 Positioning Snapshot — EURUSD")
+        
+        # Build positioning snapshot
+        z_score = cftc_summary['z_1y']
+        net_pos = cftc_summary['net_position']
+        state = cftc_summary['positioning_state']
+        
+        # Determine momentum (you can add delta logic here when available)
+        momentum_signal = "Flat"  # Could be dynamic: "Building" / "Reducing"
+        momentum_icon = "→"
+        
+        # Risk contribution logic
+        if abs(z_score) < 1.0:
+            risk_contrib = "Low"
+            risk_read = "Not a driver"
+        elif z_score > 1.5:
+            risk_contrib = "High"
+            risk_read = "Fragility rising"
+        else:
+            risk_contrib = "Moderate"
+            risk_read = "Watch for acceleration"
+        
+        positioning_snapshot_data = {
+            'Dimension': [
+                'Spec Length',
+                'Z-Score (1Y)',
+                'Momentum',
+                'Risk Contribution'
+            ],
+            'Read': [
+                state.replace('_', ' ').title(),
+                f"{z_score:+.2f}σ",
+                f"{momentum_icon} {momentum_signal}",
+                risk_contrib
+            ],
+            'Interpretation': [
+                "Not crowded" if abs(z_score) < 1.0 else "Stretched" if abs(z_score) > 1.5 else "Elevated",
+                "Neutral-to-light" if abs(z_score) < 1.0 else "Crowded",
+                "No chase behavior" if momentum_signal == "Flat" else "Flows accelerating",
+                risk_read
+            ]
+        }
+        
+        df_pos_snapshot = pd.DataFrame(positioning_snapshot_data)
+        
+        # Render positioning snapshot table
+        table_html = '<table class="snapshot-table"><thead><tr>'
+        for col in df_pos_snapshot.columns:
+            table_html += f'<th>{col}</th>'
+        table_html += '</tr></thead><tbody>'
+        
+        for _, row in df_pos_snapshot.iterrows():
+            table_html += '<tr>'
+            table_html += f'<td>{row["Dimension"]}</td>'
+            table_html += f'<td class="read-col">{row["Read"]}</td>'
+            table_html += f'<td>{row["Interpretation"]}</td>'
+            table_html += '</tr>'
+        table_html += '</tbody></table>'
+        
+        st.markdown(table_html, unsafe_allow_html=True)
+        
+        # ==================================================================
+        # FUNCTIONAL COMMENTARY — Not Neutral, But Low Constraint
+        # ==================================================================
+        st.markdown(f"""
+        <div style="background: rgba(26, 31, 46, 0.5); border-left: 4px solid #9333EA; 
+                    padding: 1.25rem; margin: 1.5rem 0; border-radius: 4px;">
+            <div style="color: #d0d0d0; font-size: 1rem; line-height: 1.7;">
+                <strong>Positioning is not constraining price.</strong> Speculative length is modest and near historical norms, 
+                leaving room for price to move without forced unwinds. Positioning neither confirms nor contradicts the valuation signal 
+                — optionality remains intact.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # ==================================================================
+        # Z-SCORE CHART — Risk Visualization
+        # ==================================================================
+        st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+        st.markdown("### 📈 Positioning Z-Score Over Time")
+        
+        if cftc_history is not None and len(cftc_history) > 0:
+            # Calculate z-score if not in data
+            if 'z_score' not in cftc_history.columns:
+                mean_1y = cftc_history['net_position'].rolling(52).mean()
+                std_1y = cftc_history['net_position'].rolling(52).std()
+                cftc_history['z_score'] = (cftc_history['net_position'] - mean_1y) / std_1y
+            
+            fig = go.Figure()
+            
+            # Add regime bands (background)
+            fig.add_hrect(y0=1.5, y1=3, fillcolor='rgba(239, 68, 68, 0.1)', line_width=0, 
+                         annotation_text="Crowded Long", annotation_position="top right")
+            fig.add_hrect(y0=-3, y1=-1.5, fillcolor='rgba(239, 68, 68, 0.1)', line_width=0,
+                         annotation_text="Crowded Short", annotation_position="bottom right")
+            
+            # Add reference lines
+            fig.add_hline(y=1.5, line_dash="dash", line_color="#EF4444", line_width=1, opacity=0.5)
+            fig.add_hline(y=0, line_dash="solid", line_color="#666666", line_width=1)
+            fig.add_hline(y=-1.5, line_dash="dash", line_color="#EF4444", line_width=1, opacity=0.5)
+            
+            # Primary: Z-Score
+            fig.add_trace(go.Scatter(
+                x=cftc_history['date'],
+                y=cftc_history['z_score'],
+                mode='lines',
+                name='Z-Score (1Y)',
+                line=dict(color='#9333EA', width=3),
+                hovertemplate='<b>Z-Score:</b> %{y:.2f}σ<extra></extra>'
+            ))
+            
+            # Secondary: Net Position (lighter, optional)
+            fig.add_trace(go.Scatter(
+                x=cftc_history['date'],
+                y=cftc_history['net_position'] / 50000,  # Scale down for visibility
+                mode='lines',
+                name='Net Position (scaled)',
+                line=dict(color='#888888', width=1, dash='dot'),
+                opacity=0.3,
+                yaxis='y2',
+                hovertemplate='<b>Net:</b> %{y:.1f}k contracts<extra></extra>'
+            ))
+            
+            fig.update_layout(
+                height=400,
+                plot_bgcolor='#1a1f2e',
+                paper_bgcolor='rgba(0,0,0,0)',
+                font=dict(color='#FFFFFF'),
+                showlegend=True,
+                legend=dict(x=0.02, y=0.98, bgcolor='rgba(26, 31, 46, 0.8)'),
+                margin=dict(l=40, r=40, t=20, b=40),
+                yaxis=dict(
+                    title=dict(text="Z-Score", font=dict(color='#888888')),
+                    gridcolor='#2a2f3e',
+                    range=[-2.5, 2.5]
+                ),
+                yaxis2=dict(
+                    overlaying='y',
+                    side='right',
+                    showgrid=False,
+                    showticklabels=False
+                ),
+                xaxis=dict(
+                    title=dict(text="", font=dict(color='#888888')),
+                    gridcolor='#2a2f3e'
+                )
+            )
+            
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("📊 **Historical positioning data available after CFTC data fetch**")
+        
+        # ==================================================================
+        # POSITIONING TRIGGERS — When Does It Matter?
+        # ==================================================================
+        st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+        st.markdown("""
+        <div style="background: rgba(147, 51, 234, 0.1); border: 1px solid #9333EA; 
+                    border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0;">
+            <div style="color: #9333EA; font-weight: 700; font-size: 0.9rem; text-transform: uppercase; 
+                        letter-spacing: 0.05em; margin-bottom: 1rem;">⚡ Positioning Triggers</div>
+            <div style="color: #d0d0d0; font-size: 0.95rem; line-height: 1.7;">
+                <strong>Becomes a headwind if:</strong> Z-score > +1.5σ (crowded long)<br>
+                <strong>Amplifies downside if:</strong> Valuation is rich + longs crowd in tandem<br>
+                <strong>Matters most during:</strong> Macro or policy shocks that force unwinds<br><br>
+                <em style="color: #888888;">Currently: Positioning is not amplifying or dampening the valuation signal. 
+                Flows are not a constraint.</em>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    else:
+        st.warning("Positioning data not available. Run CFTC data fetch script.")
+
+# =====================================================================
+# Footer
+# =====================================================================
+st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+st.caption("**Framework**: Layer 1 (Monthly Macro Valuation) + Layer 2 (Weekly Pressure Signals) + CFTC Positioning")
+st.caption("**Last Updated**: Dashboard refreshes hourly • CFTC updates weekly (Tuesday)")
+
