@@ -8,6 +8,7 @@ import pandas as pd
 import os
 from datetime import datetime
 from typing import Optional, Dict
+from pathlib import Path
 import config_cycle_v2 as config
 
 
@@ -16,8 +17,12 @@ class CSVDataLoader:
     Load and parse CSV files for Eurozone indicators
     """
     
-    def __init__(self, csv_directory: str = "eurozone_data"):
-        self.csv_dir = csv_directory
+    def __init__(self, csv_directory: str = None):
+        # Use absolute path resolution for Streamlit Cloud compatibility
+        if csv_directory is None:
+            # Default: eurozone_data in the same directory as this file
+            csv_directory = Path(__file__).parent / "eurozone_data"
+        self.csv_dir = str(csv_directory)
         
         # Mapping of indicator IDs to CSV files
         self.csv_mapping = {
