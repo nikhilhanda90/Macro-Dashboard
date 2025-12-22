@@ -3,23 +3,32 @@ FX Insights - EURUSD Analysis
 Nikhil's comprehensive FX view with Valuation, Technicals, and Positioning
 """
 import streamlit as st
-import streamlit.components.v1 as components
-import sys
-from pathlib import Path
-import json
-import pandas as pd
-import plotly.graph_objects as go
-from PIL import Image
 
-# Add parent directory to path
-sys.path.append(str(Path(__file__).parent.parent))
-
-# Page config
+# Page config FIRST (must be before any other Streamlit commands)
 st.set_page_config(
     page_title="FX Insights - Nikhil Dashboard",
     page_icon="💱",
     layout="wide"
 )
+
+# Wrap ALL imports in try/except to catch errors
+try:
+    import streamlit.components.v1 as components
+    import sys
+    from pathlib import Path
+    import json
+    import pandas as pd
+    import plotly.graph_objects as go
+    from PIL import Image
+
+    # Add parent directory to path
+    sys.path.append(str(Path(__file__).parent.parent))
+    
+    st.success("✅ Imports successful")
+    
+except Exception as e:
+    st.error(f"❌ IMPORT ERROR: {e}")
+    st.stop()
 
 # =====================================================================
 # TECHNICAL INDICATOR EXPLAINERS
@@ -560,8 +569,10 @@ except Exception as e:
 # =====================================================================
 # HEADER
 # =====================================================================
+st.write("🔍 DEBUG: Rendering header...")
 st.markdown('<h1 class="fx-title">💱 FX Insights</h1>', unsafe_allow_html=True)
 st.markdown('<p class="fx-subtitle">EURUSD • Valuation, Technicals & Positioning</p>', unsafe_allow_html=True)
+st.write("🔍 DEBUG: Header rendered")
 
 # =====================================================================
 # NIKHIL'S FX COMMENTARY (TOP - Synthesis)
@@ -586,9 +597,11 @@ st.markdown("""
 # =====================================================================
 # HORIZONTAL TABS
 # =====================================================================
+st.write("🔍 DEBUG: About to create tabs...")
 st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
 
 tab1, tab2, tab3 = st.tabs(["📈 VALUATION", "📊 TECHNICALS", "🎯 POSITIONING"])
+st.write("🔍 DEBUG: Tabs created")
 
 # =====================================================================
 # TAB 1: VALUATION
