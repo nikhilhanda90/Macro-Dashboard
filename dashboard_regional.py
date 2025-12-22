@@ -21,7 +21,7 @@ except ImportError:
     COUNTRY_ANALYSIS_AVAILABLE = False
 
 st.set_page_config(
-    page_title="Nikhil Dashboard",
+    page_title="Macro View",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -481,7 +481,7 @@ def create_indicator_cards(analysis_results, indicator_type, region):
                     st.markdown("---")
 
 def main():
-    st.title("🌍 Macro Cycle Dashboard")
+    st.title("🌍 Macro View")
     
     # Show loading status
     status_placeholder = st.empty()

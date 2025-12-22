@@ -101,26 +101,26 @@ INDICATORS = {
         'contextual': True,  # Flag for exclusion from scoring
         'interpretation_notes': 'Policy expectations only. Does NOT contribute independently to Leading score.'
     },
-    'NAPM': {
-        'name': 'ISM Manufacturing PMI',
-        'category': 'Growth',
-        'frequency': 'monthly',
-        'description': 'ISM manufacturing diffusion index (>50 = expansion, <50 = contraction)',
-        'indicator_type': 'Leading',
-        'region': 'US',
-        'use_level': True,  # Display as absolute level (around 50), NOT normalized
-        'interpretation_notes': 'Diffusion index: >50 = expansion, <50 = contraction. Display level, not YoY or rebased.'
-    },
-    'NAPMNOI': {
-        'name': 'ISM Manufacturing New Orders',
-        'category': 'Growth',
-        'frequency': 'monthly',
-        'description': 'ISM new orders diffusion index (>50 = expansion, <50 = contraction)',
-        'indicator_type': 'Leading',
-        'region': 'US',
-        'use_level': True,  # Display as absolute level (around 50), NOT normalized
-        'interpretation_notes': 'Diffusion index: >50 = expansion, <50 = contraction. Display level, not YoY or rebased.'
-    },
+    # 'NAPM': {
+    #     'name': 'ISM Manufacturing PMI',
+    #     'category': 'Growth',
+    #     'frequency': 'monthly',
+    #     'description': 'ISM manufacturing diffusion index (>50 = expansion, <50 = contraction)',
+    #     'indicator_type': 'Leading',
+    #     'region': 'US',
+    #     'use_level': True,  # Display as absolute level (around 50), NOT normalized
+    #     'interpretation_notes': 'Diffusion index: >50 = expansion, <50 = contraction. Display level, not YoY or rebased.'
+    # },
+    # 'NAPMNOI': {
+    #     'name': 'ISM Manufacturing New Orders',
+    #     'category': 'Growth',
+    #     'frequency': 'monthly',
+    #     'description': 'ISM new orders diffusion index (>50 = expansion, <50 = contraction)',
+    #     'indicator_type': 'Leading',
+    #     'region': 'US',
+    #     'use_level': True,  # Display as absolute level (around 50), NOT normalized
+    #     'interpretation_notes': 'Diffusion index: >50 = expansion, <50 = contraction. Display level, not YoY or rebased.'
+    # },
     'AWHMAN': {
         'name': 'Avg Weekly Hours - Manufacturing',
         'category': 'Labor',
@@ -480,17 +480,17 @@ INDICATORS = {
         'use_yoy': False
     },
     # Growth - Use Germany (more reliable data)
-    'DEUPRO': {
-        'name': 'Industrial Production (Germany)',
-        'category': 'Growth',
-        'frequency': 'monthly',
-        'description': 'German industrial production index',
-        'indicator_type': 'Coincident',
-        'region': 'Eurozone',
-        'source': 'fred',
-        'use_yoy': True,  # Index - use YoY
-        'use_mom': False
-    },
+    # 'DEUPRO': {
+    #     'name': 'Industrial Production (Germany)',
+    #     'category': 'Growth',
+    #     'frequency': 'monthly',
+    #     'description': 'German industrial production index',
+    #     'indicator_type': 'Coincident',
+    #     'region': 'Eurozone',
+    #     'source': 'fred',
+    #     'use_yoy': True,  # Index - use YoY
+    #     'use_mom': False
+    # },
     'EA19RETTOT01IXOBM': {
         'name': 'Retail Sales Volume (EUR)',
         'category': 'Growth',
