@@ -532,11 +532,30 @@ def load_technical_analysis():
     except Exception as e:
         return None
 
-# Load data
-decision = load_fx_views_decision()
-charts = load_fx_views_charts()
-cftc_summary, cftc_history = load_cftc_positioning()
-technical = load_technical_analysis()
+# Load data with error handling
+try:
+    decision = load_fx_views_decision()
+except Exception as e:
+    st.error(f"⚠️ Decision data failed: {e}")
+    decision = None
+
+try:
+    charts = load_fx_views_charts()
+except Exception as e:
+    st.error(f"⚠️ Charts failed: {e}")
+    charts = None
+
+try:
+    cftc_summary, cftc_history = load_cftc_positioning()
+except Exception as e:
+    st.error(f"⚠️ CFTC data failed: {e}")
+    cftc_summary, cftc_history = None, None
+
+try:
+    technical = load_technical_analysis()
+except Exception as e:
+    st.error(f"⚠️ Technical data failed: {e}")
+    technical = None
 
 # =====================================================================
 # HEADER
