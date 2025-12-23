@@ -705,24 +705,370 @@ st.markdown('<h1 class="fx-title">💱 FX Insights</h1>', unsafe_allow_html=True
 st.markdown('<p class="fx-subtitle">EURUSD • Valuation, Technicals & Positioning</p>', unsafe_allow_html=True)
 
 # =====================================================================
-# NIKHIL'S FX COMMENTARY (TOP - Synthesis)
+# DYNAMIC FX COMMENTARY FUSION ENGINE
 # =====================================================================
-st.markdown("""
-<div class="nikhil-commentary">
-    <div class="commentary-header">💬 Nikhil's FX Commentary</div>
-    <div class="commentary-text">
-        <p><strong>EUR is stuck in the middle lane</strong> — nothing strong enough to re-accelerate, nothing weak enough to break. 
-        The macro fair value model says rich (+1.3σ), weekly pressure is compressing, and positioning sits neutral. 
-        Not giving bears much to work with, but bulls lack conviction.</p>
-        
-        <p>Valuation points to mean reversion, technicals are mixed, and CFTC speculative positioning shows no crowding risk. 
-        The framework suggests fading rallies rather than chasing them, but with limited urgency. 
-        Watch for catalysts: if macro surprises turn negative or positioning shifts, downside asymmetry increases.</p>
-        
-        <p><strong>Bottom line:</strong> Overvaluation fading mode. Lean mean-revert, but wait for confirmation.</p>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+def generate_fx_commentary_analyst(val, tech, pos):
+    """
+    Fusion engine: Valuation + Technicals + Positioning → Nikhil's synthesis
+    
+    Args:
+        val: dict with fv_z, fv_state, val_regime, mispricing_trend, weekly_pressure
+        tech: dict with bias_score, bias_label, trade_posture, bias_triggers, posture_triggers
+        pos: dict with z_score, state, delta, impulse
+    
+    Returns:
+        tuple: (commentary_markdown, confidence_level)
+    """
+    # Extract inputs
+    val_z = val.get('fv_z', 0)
+    val_state = val.get('fv_state', 'fair')  # rich/cheap/fair
+    val_regime = val.get('val_regime', 'neutral')  # fade_rallies/buy_dips/momentum/neutral
+    val_trend = val.get('mispricing_trend', 'stabilizing')  # widening/stabilizing/compressing
+    
+    tech_score = tech.get('bias_score', 0)
+    tech_bias = tech.get('bias_label', 'Neutral')  # Bullish/Neutral/Bearish
+    tech_posture = tech.get('trade_posture', 'Range / Wait')
+    
+    pos_z = pos.get('z_score', 0)
+    pos_state = pos.get('state', 'neutral')  # neutral/crowded_long/crowded_short
+    pos_delta = pos.get('delta', 'flat')
+    
+    # ===== A) BASE STANCE (Valuation + Technicals) =====
+    base_stance = None
+    
+    # Rich + Fade signals → Sell rallies
+    if val_state == 'rich' and tech_posture in ['Fade Rallies', 'Range / Wait', 'Fade Selloffs']:
+        base_stance = "Lean sell rallies"
+    # Cheap + Buy signals → Buy dips/breaks
+    elif val_state == 'cheap' and tech_posture in ['Buy Breakouts', 'Buy Dips']:
+        base_stance = "Lean buy dips"
+    # Strong valuation override (extreme mispricing)
+    elif abs(val_z) >= 1.5:
+        if val_z > 0:
+            base_stance = "Mean reversion bias (fade EUR strength)"
+        else:
+            base_stance = "Mean reversion bias (buy EUR weakness)"
+    # Range/Wait default
+    elif tech_posture in ['Range / Wait', 'Range / Neutral']:
+        base_stance = "Wait / tactical only"
+    # Momentum following
+    elif tech_posture == 'Buy Breakouts':
+        base_stance = "Chase upside on confirmation"
+    elif tech_posture == 'Sell Breakdowns':
+        base_stance = "Chase downside on confirmation"
+    else:
+        base_stance = "Neutral / wait for setup"
+    
+    # ===== B) CONFIDENCE (agreement + positioning risk) =====
+    confidence = "Medium"
+    
+    # Check agreement
+    val_bearish = (val_state == 'rich' or val_regime in ['fade_rallies', 'mean_reversion'])
+    val_bullish = (val_state == 'cheap' or val_regime in ['buy_dips'])
+    tech_bearish = (tech_score < -1.0 or 'Fade' in tech_posture or 'Sell' in tech_posture)
+    tech_bullish = (tech_score > 1.0 or 'Buy' in tech_posture)
+    
+    agreement = (val_bearish and tech_bearish) or (val_bullish and tech_bullish)
+    
+    # Positioning risk
+    pos_clean = abs(pos_z) < 1.0
+    pos_fragile = abs(pos_z) > 1.5
+    
+    # Check if positioning is available
+    pos_available = (pos_state not in ['neutral', ''] and abs(pos_z) > 0.01)
+    
+    # Confidence logic
+    if not pos_available:
+        # Cap at Medium if positioning unavailable
+        confidence = "Medium" if agreement else "Low"
+    elif agreement and pos_clean:
+        confidence = "High"
+    elif agreement and pos_fragile:
+        confidence = "Medium"  # Agreement but crowding adds risk
+    elif not agreement:
+        confidence = "Low"  # Valuation and technicals disagree
+    
+    # ===== C) BUILD NATURAL PARAGRAPH (FLOWING, NOT BULLETS) =====
+    
+    # Opening state (valuation + context)
+    if val_state == 'rich' and abs(val_z) >= 1.5:
+        if val_trend == 'widening':
+            opening = f"EUR still looks rich (+{val_z:.1f}σ), and the overvaluation is widening"
+        elif val_trend == 'compressing':
+            opening = f"EUR looks rich (+{val_z:.1f}σ), but the overvaluation is starting to compress"
+        else:
+            opening = f"EUR still looks rich (+{val_z:.1f}σ), but the overvaluation isn't widening anymore"
+    elif val_state == 'rich':
+        opening = f"EUR is trading a bit rich (+{val_z:.1f}σ), though not stretched yet"
+    elif val_state == 'cheap' and abs(val_z) >= 1.5:
+        if val_trend == 'widening':
+            opening = f"EUR looks cheap ({val_z:.1f}σ), and the undervaluation keeps building"
+        elif val_trend == 'compressing':
+            opening = f"EUR looks cheap ({val_z:.1f}σ), but the gap to fair value is closing"
+        else:
+            opening = f"EUR looks cheap ({val_z:.1f}σ), though it's not getting much cheaper"
+    elif val_state == 'cheap':
+        opening = f"EUR is trading below fair value ({val_z:.1f}σ), creating some dip-buy appeal"
+    else:
+        opening = f"EUR is near fair value, so fundamentals aren't arguing for much directional bias"
+    
+    # Technical interpretation (confirmation or tension)
+    if 'Buy' in tech_posture and tech_score > 1.5:
+        if 'Breakout' in tech_posture:
+            tech_clause = "Technically the setup is constructive and breakouts would likely follow through"
+        else:
+            tech_clause = "Technically it's holding up, which makes dips more attractive than chasing rallies"
+    elif 'Fade' in tech_posture or 'Sell' in tech_posture:
+        tech_clause = "Technically the uptrend is intact, though momentum is fading, which keeps this in a sell-rallies setup rather than something to chase"
+    elif tech_posture == 'Range / Wait':
+        tech_clause = "Technically it's stuck in a range, so there's no clear directional edge yet"
+    elif tech_score < -1.5:
+        tech_clause = "Technically it's weakening, and breakdown risk is building"
+    else:
+        tech_clause = "Technically the picture is mixed — not enough to lean either way"
+    
+    # Positioning overlay (risk modifier)
+    if not pos_available:
+        pos_clause = "Positioning data is unavailable, so we're flying a bit blind on crowding risk"
+    elif pos_state == 'neutral':
+        pos_clause = "Positioning is neutral, so there's no forced move either way"
+    elif pos_state == 'crowded_long':
+        pos_clause = f"Positioning is crowded long ({pos_z:+.1f}σ), which adds fragility if something breaks"
+    elif pos_state == 'crowded_short':
+        pos_clause = f"Positioning is crowded short ({pos_z:+.1f}σ), creating squeeze risk if flows turn supportive"
+    else:
+        pos_clause = ""
+    
+    # Conditional watch (what changes the view)
+    triggers = []
+    if tech.get('bias_triggers'):
+        triggers.append(tech['bias_triggers'][0])
+    if tech.get('posture_triggers') and len(triggers) < 2:
+        triggers.append(tech['posture_triggers'][0])
+    
+    if len(triggers) >= 2:
+        watch_clause = f"A {triggers[0]} would open more downside, while a {triggers[1].lower()} would flip the setup"
+    elif len(triggers) == 1:
+        watch_clause = f"A {triggers[0]} would change the setup materially"
+    else:
+        if val_state == 'rich':
+            watch_clause = "A technical break lower or a macro surprise would accelerate mean reversion"
+        elif val_state == 'cheap':
+            watch_clause = "If technicals confirm, dips become more interesting"
+        else:
+            watch_clause = "Looking for a catalyst or technical break to establish direction"
+    
+    # ===== D) ASSEMBLE PARAGRAPH (NATURAL FLOW) =====
+    sentences = [opening, tech_clause]
+    if pos_clause:
+        sentences.append(pos_clause)
+    sentences.append(watch_clause)
+    
+    # Join with proper connectors
+    paragraph = f"{sentences[0]}. {sentences[1]}. "
+    if len(sentences) >= 3:
+        paragraph += f"{sentences[2]}. "
+    paragraph += f"{sentences[-1]}."
+    
+    return paragraph, confidence
+
+
+def generate_fx_commentary_executive(val, tech, pos):
+    """
+    Executive/CFO mode: No indicators, no jargon, clean risk framing
+    
+    Args: Same as analyst mode
+    Returns: (commentary_paragraph, confidence_level)
+    """
+    # Extract inputs
+    val_z = val.get('fv_z', 0)
+    val_state = val.get('fv_state', 'fair')
+    val_trend = val.get('mispricing_trend', 'stabilizing')
+    
+    tech_score = tech.get('bias_score', 0)
+    tech_posture = tech.get('trade_posture', 'Range / Wait')
+    
+    pos_z = pos.get('z_score', 0)
+    pos_state = pos.get('state', 'neutral')
+    
+    # Same confidence logic as analyst mode
+    pos_available = (pos_state not in ['neutral', ''] and abs(pos_z) > 0.01)
+    val_bearish = (val_state == 'rich' or val.get('val_regime') in ['fade_rallies', 'mean_reversion'])
+    val_bullish = (val_state == 'cheap' or val.get('val_regime') in ['buy_dips'])
+    tech_bearish = (tech_score < -1.0 or 'Fade' in tech_posture or 'Sell' in tech_posture)
+    tech_bullish = (tech_score > 1.0 or 'Buy' in tech_posture)
+    agreement = (val_bearish and tech_bearish) or (val_bullish and tech_bullish)
+    pos_clean = abs(pos_z) < 1.0
+    pos_fragile = abs(pos_z) > 1.5
+    
+    if not pos_available:
+        confidence = "Medium" if agreement else "Low"
+    elif agreement and pos_clean:
+        confidence = "High"
+    elif agreement and pos_fragile:
+        confidence = "Medium"
+    else:
+        confidence = "Low"
+    
+    # ===== BUILD EXECUTIVE COMMENTARY (3-4 SENTENCES) =====
+    
+    # Sentence 1: Valuation context
+    if val_state == 'rich' and abs(val_z) >= 1.5:
+        if val_trend == 'widening':
+            sent1 = "EUR looks overvalued, and the imbalance continues to widen"
+        elif val_trend == 'compressing':
+            sent1 = "EUR looks overvalued, but the imbalance is starting to correct"
+        else:
+            sent1 = "EUR looks overvalued, though the imbalance is no longer widening"
+    elif val_state == 'rich':
+        sent1 = "EUR appears somewhat overvalued, though not at extreme levels"
+    elif val_state == 'cheap' and abs(val_z) >= 1.5:
+        if val_trend == 'widening':
+            sent1 = "EUR looks undervalued, and the discount continues to grow"
+        elif val_trend == 'compressing':
+            sent1 = "EUR looks undervalued, but the gap to fair value is closing"
+        else:
+            sent1 = "EUR looks undervalued, though the discount has stabilized"
+    elif val_state == 'cheap':
+        sent1 = "EUR appears somewhat undervalued, creating potential upside"
+    else:
+        sent1 = "EUR is trading near fundamental fair value"
+    
+    # Sentence 2: Risk skew (momentum/direction)
+    if 'Buy' in tech_posture and tech_score > 1.5:
+        sent2 = "Upside momentum appears intact, leaving near-term risk modestly skewed higher"
+    elif 'Fade' in tech_posture or 'Sell' in tech_posture:
+        sent2 = "Upside momentum appears limited, leaving near-term risk modestly skewed to the downside rather than a breakout higher"
+    elif tech_posture == 'Range / Wait':
+        sent2 = "Price action remains largely stable, with no clear directional bias"
+    elif tech_score < -1.5:
+        sent2 = "Downside pressure is building, with risk skewed lower"
+    else:
+        sent2 = "Market direction remains unclear, with balanced near-term risk"
+    
+    # Sentence 3: Positioning / fragility
+    if not pos_available:
+        sent3 = "Positioning data is unavailable, limiting visibility into potential forced moves"
+    elif pos_state == 'neutral':
+        sent3 = "Positioning is not stretched, suggesting no forced move from speculative flows"
+    elif pos_state == 'crowded_long':
+        sent3 = "Positioning shows crowding on the long side, increasing fragility to negative surprises"
+    elif pos_state == 'crowded_short':
+        sent3 = "Positioning shows crowding on the short side, creating squeeze risk if conditions improve"
+    else:
+        sent3 = "Positioning appears balanced"
+    
+    # Sentence 4: What would change the risk (NO specific levels)
+    if val_state == 'rich' and ('Fade' in tech_posture or 'Sell' in tech_posture):
+        sent4 = "Downside risk would increase if the market weakens materially, while easing pressure would stabilize the outlook"
+    elif val_state == 'cheap' and 'Buy' in tech_posture:
+        sent4 = "Upside risk would increase with market confirmation, while further deterioration would extend the discount"
+    elif tech_posture == 'Range / Wait':
+        sent4 = "A clear catalyst would be needed to establish directional momentum"
+    elif tech_score < -1.5:
+        sent4 = "Further weakness could accelerate downside, while stabilization would reduce near-term risk"
+    else:
+        sent4 = "Market dynamics or policy surprises could materially shift the risk balance"
+    
+    # Assemble
+    executive_para = f"{sent1}. {sent2}. {sent3}. {sent4}."
+    
+    return executive_para, confidence
+
+
+# Add commentary mode toggle
+commentary_mode = st.radio(
+    "Commentary Mode",
+    options=["Analyst", "Executive"],
+    horizontal=True,
+    help="Analyst: Technical detail for traders/analysts. Executive: Risk framing for CFOs/senior leadership."
+)
+
+# Generate dynamic commentary
+if decision and technical and cftc_summary:
+    # Prepare inputs
+    val_input = {
+        'fv_z': decision['inputs'].get('z_val', 0),
+        'fv_state': 'rich' if decision['inputs'].get('z_val', 0) > 0.5 else ('cheap' if decision['inputs'].get('z_val', 0) < -0.5 else 'fair'),
+        'val_regime': decision.get('action_bias', 'neutral').lower().replace('-', '_'),
+        'mispricing_trend': 'stabilizing',  # Could derive from regime
+        'weekly_pressure': decision['inputs'].get('pressure_dir', 'neutral')
+    }
+    
+    # Compute trade posture (same logic as in Technicals tab)
+    tech_score = technical.get('technical_score', 0)
+    confirmation = technical.get('confirmation_status', 'not_confirmed')
+    rsi = technical.get('indicators', {}).get('RSI', 50)
+    sma_200 = technical.get('indicators', {}).get('SMA_200')
+    spot = technical.get('spot', 1.0)
+    
+    # Determine posture
+    if tech_score >= 1.5:
+        if confirmation == "confirmed":
+            trade_posture = "Buy Breakouts"
+        elif rsi > 70:
+            trade_posture = "Fade Rallies"
+        else:
+            trade_posture = "Buy Dips"
+    elif tech_score <= -1.5:
+        if confirmation == "confirmed":
+            trade_posture = "Sell Breakdowns"
+        elif rsi < 30:
+            trade_posture = "Fade Selloffs"
+        else:
+            trade_posture = "Sell Rallies"
+    else:
+        trade_posture = "Range / Wait"
+    
+    # Generate triggers
+    bias_triggers = []
+    posture_triggers = []
+    
+    if sma_200 and spot:
+        if spot > sma_200:
+            bias_triggers.append(f"break below key support ({sma_200:.4f})")
+        else:
+            bias_triggers.append(f"break above key resistance ({sma_200:.4f})")
+    
+    if rsi > 65:
+        posture_triggers.append("momentum reset re-enables dip buying")
+    elif rsi < 35:
+        posture_triggers.append("momentum reset re-enables rally selling")
+    
+    tech_input = {
+        'bias_score': tech_score,
+        'bias_label': technical.get('regime', 'Neutral'),
+        'trade_posture': trade_posture,
+        'bias_triggers': bias_triggers if bias_triggers else ['Major MA break'],
+        'posture_triggers': posture_triggers if posture_triggers else ['Momentum confirmation']
+    }
+    
+    pos_input = {
+        'z_score': cftc_summary.get('z_1y', 0),
+        'state': cftc_summary.get('positioning_state', 'neutral'),
+        'delta': 'flat',
+        'impulse': 'neutral'
+    }
+    
+    # Call appropriate generator based on mode
+    if commentary_mode == "Executive":
+        fx_commentary, fx_confidence = generate_fx_commentary_executive(val_input, tech_input, pos_input)
+    else:  # Analyst (default)
+        fx_commentary, fx_confidence = generate_fx_commentary_analyst(val_input, tech_input, pos_input)
+else:
+    fx_commentary = "**Status:** Data loading..."
+    fx_confidence = "N/A"
+
+# Render header with confidence badge
+col_head, col_badge = st.columns([5, 1])
+with col_head:
+    st.markdown("### 💬 Nikhil's FX Commentary")
+with col_badge:
+    conf_emoji = "🟢" if fx_confidence == "High" else ("🟡" if fx_confidence == "Medium" else "🔴")
+    st.markdown(f"**{conf_emoji} {fx_confidence}**")
+
+# Render commentary as natural paragraph (blockquote style)
+st.markdown(f"> {fx_commentary}")
 
 # =====================================================================
 # HORIZONTAL TABS

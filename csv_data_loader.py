@@ -37,7 +37,6 @@ class CSVDataLoader:
         self.csv_mapping = {
             'EA_UNEMPLOYMENT': 'eurostat_unemployment_ea20.csv',
             'EA_EMPLOYMENT': 'eurostat_employment_ea20.csv',
-            'EA_EMPLOYMENT_RATE': 'eurostat_employment_ea20.csv',
             'EA_IP': 'eurostat_ip_ea20.csv',
             'EA_MFG_PMI': 'eurozone_mfg_pmi.csv',
             'EA_RETAIL': 'eurostat_retail_ea20.csv',

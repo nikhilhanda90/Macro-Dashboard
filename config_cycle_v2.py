@@ -468,17 +468,6 @@ INDICATORS = {
         'eurostat_filters': {'s_adj': 'SA', 'age': 'TOTAL', 'sex': 'T', 'unit': 'PC_ACT'},
         'use_yoy': False
     },
-    'EA_EMPLOYMENT_RATE': {
-        'name': 'Employment Rate (EUR)',
-        'category': 'Labor',
-        'frequency': 'quarterly',
-        'description': 'Euro Area employment rate (% of population 15-64, Eurostat)',
-        'indicator_type': 'Coincident',
-        'region': 'Eurozone',
-        'source': 'csv',
-        'csv_file': 'eurozone_data/eurostat_employment_ea20.csv',
-        'use_yoy': False
-    },
     # Growth - Use Germany (more reliable data)
     # 'DEUPRO': {
     #     'name': 'Industrial Production (Germany)',
