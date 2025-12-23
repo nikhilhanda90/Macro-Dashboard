@@ -84,7 +84,7 @@ INDICATORS = {
         'description': 'The policy-vs-growth tug-of-war — where markets judge whether the Fed is too tight or too loose.',
         'indicator_type': 'Leading',
         'region': 'US',
-        'source': 'derived_file',  # Pre-computed, load from file (fallback: compute on-fly)
+        'source': 'derived',  # Compute on-the-fly from FRED components
         'spread_component_1': 'DGS10',  # 10Y Treasury
         'spread_component_2': 'DGS1',   # 1Y Treasury
         'inverted': False,  # Steepening (positive) = good, flattening/inversion = bad
@@ -377,7 +377,7 @@ INDICATORS = {
         'description': 'The policy-vs-growth tug-of-war — where markets judge whether the ECB is too tight or too loose.',
         'indicator_type': 'Leading',
         'region': 'Eurozone',
-        'source': 'derived_file',  # Pre-computed, load from file (fallback: compute on-fly)
+        'source': 'derived',  # Compute on-the-fly from FRED components
         'spread_component_1': 'IRLTLT01EZM156N',  # EA 10Y
         'spread_component_2': 'IRSTCI01EZM156N',  # EA 1Y
         'inverted': False,  # Steepening (positive) = good, flattening/inversion = bad
@@ -410,7 +410,7 @@ INDICATORS = {
         'description': 'French OAT vs German Bund 10Y spread (sovereign risk premium)',
         'indicator_type': 'Leading',
         'region': 'Eurozone',
-        'source': 'derived_file',  # Pre-computed, load from file (fallback: compute on-fly)
+        'source': 'derived',  # Compute on-the-fly from FRED components
         'spread_component_1': 'IRLTLT01FRM156N',  # FR 10Y
         'spread_component_2': 'IRLTLT01DEM156N',  # DE 10Y
         'inverted': True  # Higher spread = more stress
