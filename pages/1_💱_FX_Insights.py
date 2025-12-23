@@ -524,12 +524,172 @@ def load_cftc_positioning():
 
 @st.cache_data(ttl=3600)
 def load_technical_analysis():
-    """Load technical analysis summary"""
+    """
+    Generate fresh technical analysis data
+    Runs on first load, then caches for 1 hour
+    """
     try:
-        tech_path = Path(__file__).parent.parent / 'FX Views' / 'technical_outputs' / 'eurusd_technical_summary.json'
-        with open(tech_path, 'r') as f:
-            return json.load(f)
+        import yfinance as yf
+        import pandas as pd
+        import numpy as np
+        from datetime import datetime, timedelta
+        
+        # Fetch EURUSD data
+        ticker = yf.Ticker("EURUSD=X")
+        df = ticker.history(period="2y", interval="1d")
+        
+        if df.empty:
+            return None
+        
+        # Calculate indicators
+        df['SMA_50'] = df['Close'].rolling(50).mean()
+        df['SMA_100'] = df['Close'].rolling(100).mean()
+        df['SMA_200'] = df['Close'].rolling(200).mean()
+        
+        # RSI
+        delta = df['Close'].diff()
+        gain = (delta.where(delta > 0, 0)).rolling(14).mean()
+        loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
+        rs = gain / loss
+        df['RSI'] = 100 - (100 / (1 + rs))
+        
+        # MACD
+        exp1 = df['Close'].ewm(span=12, adjust=False).mean()
+        exp2 = df['Close'].ewm(span=26, adjust=False).mean()
+        df['MACD'] = exp1 - exp2
+        df['MACD_Signal'] = df['MACD'].ewm(span=9, adjust=False).mean()
+        df['MACD_Hist'] = df['MACD'] - df['MACD_Signal']
+        
+        # Bollinger Bands
+        df['BB_Middle'] = df['Close'].rolling(20).mean()
+        bb_std = df['Close'].rolling(20).std()
+        df['BB_Upper'] = df['BB_Middle'] + (bb_std * 2)
+        df['BB_Lower'] = df['BB_Middle'] - (bb_std * 2)
+        df['BB_Width'] = df['BB_Upper'] - df['BB_Lower']
+        
+        # ATR
+        high_low = df['High'] - df['Low']
+        high_close = np.abs(df['High'] - df['Close'].shift())
+        low_close = np.abs(df['Low'] - df['Close'].shift())
+        ranges = pd.concat([high_low, high_close, low_close], axis=1)
+        true_range = ranges.max(axis=1)
+        df['ATR'] = true_range.rolling(20).mean()
+        
+        # 1-year high/low
+        df['Year_High'] = df['High'].rolling(252).max()
+        df['Year_Low'] = df['Low'].rolling(252).min()
+        
+        # Get latest row
+        latest = df.iloc[-1]
+        prev = df.iloc[-2]
+        
+        # Calculate percentiles
+        lookback_5y = min(1260, len(df))
+        bb_width_pct = (df['BB_Width'].iloc[-lookback_5y:] < latest['BB_Width']).sum() / lookback_5y * 100
+        atr_pct = (df['ATR'].iloc[-lookback_5y:] < latest['ATR']).sum() / lookback_5y * 100
+        
+        # Calculate technical score (NEW FIXED LOGIC)
+        spot = latest['Close']
+        
+        # Structure score (max ±2.5)
+        structure_score = 0.0
+        if pd.notna(latest['SMA_200']):
+            structure_score += 1.0 if spot > latest['SMA_200'] else -1.0
+        if pd.notna(latest['SMA_100']):
+            structure_score += 0.5 if spot > latest['SMA_100'] else -0.5
+        if pd.notna(latest['SMA_50']):
+            structure_score += 0.5 if spot > latest['SMA_50'] else -0.5
+        
+        # Momentum score (max ±3.0)
+        momentum_score = 0.0
+        if pd.notna(latest['RSI']):
+            if latest['RSI'] > 55:
+                momentum_score += 1.0
+            elif latest['RSI'] < 45:
+                momentum_score -= 1.0
+        
+        if pd.notna(latest['MACD_Hist']) and pd.notna(prev['MACD_Hist']):
+            if latest['MACD_Hist'] > prev['MACD_Hist']:
+                momentum_score += 1.0
+            else:
+                momentum_score -= 1.0
+        
+        # Normalize and combine
+        S_norm = structure_score / 2.5
+        M_norm = momentum_score / 3.0
+        technical_score = 3.0 * (0.5 * S_norm + 0.5 * M_norm)
+        
+        # Regime
+        if technical_score >= 1.5:
+            regime = "Bullish"
+        elif technical_score <= -1.5:
+            regime = "Bearish"
+        else:
+            regime = "Neutral"
+        
+        # Risk flags
+        risk_flags = []
+        if pd.notna(latest['RSI']):
+            if latest['RSI'] > 70:
+                risk_flags.append("Overbought")
+            elif latest['RSI'] < 30:
+                risk_flags.append("Oversold")
+        
+        # Generate labels
+        if abs(S_norm) > 0.6:
+            structure_text = "strong" if S_norm > 0 else "weak"
+        elif abs(S_norm) > 0.3:
+            structure_text = "leaning bullish" if S_norm > 0 else "leaning bearish"
+        else:
+            structure_text = "neutral"
+        
+        if abs(M_norm) > 0.6:
+            momentum_text = "supportive" if M_norm > 0 else "fading"
+        elif abs(M_norm) > 0.3:
+            momentum_text = "positive" if M_norm > 0 else "negative"
+        else:
+            momentum_text = "mixed"
+        
+        # Return summary
+        return {
+            'date': latest.name.strftime('%Y-%m-%d'),
+            'spot': float(spot),
+            'technical_score': float(technical_score),
+            'structure_score': float(structure_score),
+            'momentum_score': float(momentum_score),
+            'S_norm': float(S_norm),
+            'M_norm': float(M_norm),
+            'confirmation_status': 'not_confirmed',
+            'risk_flags': risk_flags,
+            'regime': regime,
+            'trend_label': "Above 200d MA" if spot > latest['SMA_200'] else "Below 200d MA",
+            'trend_read': "Medium-term uptrend intact" if spot > latest['SMA_200'] else "Medium-term downtrend",
+            'momentum_label': "Positive" if M_norm > 0.33 else ("Negative" if M_norm < -0.33 else "Mixed"),
+            'momentum_display': "Positive" if M_norm > 0.33 else ("Negative" if M_norm < -0.33 else "Mixed"),
+            'momentum_read': "Strong follow-through" if M_norm > 0.5 else ("No strong follow-through" if M_norm > -0.5 else "Losing momentum"),
+            'volatility_label': "Compressed" if bb_width_pct < 30 else ("Expanded" if bb_width_pct > 70 else "Normal"),
+            'volatility_read': "Break risk rising" if bb_width_pct < 30 else ("High volatility regime" if bb_width_pct > 70 else "Range conditions"),
+            'regime_display': f"{regime}, not confirmed",
+            'drivers_line': f"Drivers: Structure {structure_text}, Momentum {momentum_text} → Score {technical_score:+.1f}",
+            'score_subtitle': "Constructive, not confirmed" if technical_score >= 1.5 else ("Range conditions" if technical_score > -1.5 else "Bearish bias, watch confirmation"),
+            'indicators': {
+                'SMA_50': float(latest['SMA_50']) if pd.notna(latest['SMA_50']) else None,
+                'SMA_100': float(latest['SMA_100']) if pd.notna(latest['SMA_100']) else None,
+                'SMA_200': float(latest['SMA_200']) if pd.notna(latest['SMA_200']) else None,
+                'RSI': float(latest['RSI']) if pd.notna(latest['RSI']) else None,
+                'MACD': float(latest['MACD']) if pd.notna(latest['MACD']) else None,
+                'MACD_Signal': float(latest['MACD_Signal']) if pd.notna(latest['MACD_Signal']) else None,
+                'ATR': float(latest['ATR']) if pd.notna(latest['ATR']) else None,
+            },
+            'percentiles': {
+                'bb_width_pct': float(bb_width_pct),
+                'atr_pct': float(atr_pct)
+            },
+            'key_levels': [],
+            'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
     except Exception as e:
+        st.error(f"Technical analysis error: {e}")
         return None
 
 # Load data
@@ -890,109 +1050,231 @@ with tab2:
         st.markdown(table_html, unsafe_allow_html=True)
         
         # ==================================================================
-        # SCORE VISUALIZATION — Directional Bias
+        # TECHNICAL BIAS + TRADE POSTURE
         # ==================================================================
         st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
         
-        # Calculate NORMALIZED drivers (MUST match score calculation logic)
-        S_norm = structure_score / 2.5  # Structure normalized to [-1, +1]
-        M_norm = momentum_score / 3.0   # Momentum normalized to [-1, +1]
+        # Calculate normalized components
+        S_norm = structure_score / 2.5
+        M_norm = momentum_score / 3.0
         
-        # VALIDATION: Ensure drivers are consistent with score
-        # If score is non-zero, at least one normalized driver must be non-zero
-        if abs(score) > 0.1:  # Non-zero score
-            if abs(S_norm) < 0.01 and abs(M_norm) < 0.01:  # Both drivers are zero
-                st.error("⚠️ Technical Score Bug: Non-zero score with zero drivers. This is a data integrity issue.")
-        
-        # Determine score color and subtitle based on score AND confirmation
-        score_color = '#00A676' if score > 0 else '#EF4444' if score < 0 else '#888888'
-        
-        # Dynamic subtitle - standardized confirmation phrases
+        # TECHNICAL BIAS (what is the structural lean?)
         if score >= 1.5:
-            subtitle = "Bullish, confirmed" if confirmation_status == "confirmed" else "Constructive, not confirmed"
+            bias_label = "Bullish Bias"
+            bias_color = "#00A676"
+            bias_meaning = "Structure supports upside"
         elif score <= -1.5:
-            subtitle = "Bearish, confirmed" if confirmation_status == "confirmed" else "Bearish bias, watch confirmation"
+            bias_label = "Bearish Bias"
+            bias_color = "#EF4444"
+            bias_meaning = "Structure supports downside"
         else:
-            subtitle = "Range conditions"
+            bias_label = "Neutral Bias"
+            bias_color = "#888888"
+            bias_meaning = "No structural lean"
         
-        # Generate text-based drivers for clarity
-        if abs(S_norm) > 0.6:
-            structure_text = "strong" if S_norm > 0 else "weak"
-        elif abs(S_norm) > 0.3:
-            structure_text = "leaning bullish" if S_norm > 0 else "leaning bearish"
-        else:
-            structure_text = "neutral"
+        # TRADE POSTURE (what should you DO with this bias?)
+        bb_width_pct = percentiles.get('bb_width_pct', 50)
+        rsi = indicators.get('RSI', 50)
         
-        if abs(M_norm) > 0.6:
-            momentum_text = "supportive" if M_norm > 0 else "fading"
-        elif abs(M_norm) > 0.3:
-            momentum_text = "positive" if M_norm > 0 else "negative"
-        else:
-            momentum_text = "mixed"
+        # Posture logic
+        if score >= 1.5:  # Bullish bias
+            if confirmation_status == "confirmed" and bb_width_pct > 50:
+                posture = "Buy Breakouts"
+                posture_color = "#00A676"
+                posture_explain = "Bias is bullish, confirmed, and volatility expanding → chase upside"
+            elif rsi > 70 or confirmation_status == "not_confirmed":
+                posture = "Fade Rallies"
+                posture_color = "#FFA500"
+                posture_explain = "Bias bullish but stretched or unconfirmed → sell strength"
+            else:
+                posture = "Buy Dips"
+                posture_color = "#00A676"
+                posture_explain = "Bias bullish, not stretched → buy weakness"
         
-        # Create a proper visual card with driver breakdown
-        st.markdown(f"""
-        <div style='max-width: 600px; margin: 2rem auto; text-align: center;'>
-            <div style='color: #888888; font-size: 0.85rem; text-transform: uppercase; 
-                        letter-spacing: 0.05em; margin-bottom: 1rem;'>
-                Technical Score
-            </div>
+        elif score <= -1.5:  # Bearish bias
+            if confirmation_status == "confirmed" and bb_width_pct > 50:
+                posture = "Sell Breakdowns"
+                posture_color = "#EF4444"
+                posture_explain = "Bias is bearish, confirmed, and volatility expanding → chase downside"
+            elif rsi < 30 or confirmation_status == "not_confirmed":
+                posture = "Fade Selloffs"
+                posture_color = "#FFA500"
+                posture_explain = "Bias bearish but stretched or unconfirmed → buy weakness"
+            else:
+                posture = "Sell Rallies"
+                posture_color = "#EF4444"
+                posture_explain = "Bias bearish, not stretched → sell strength"
+        
+        else:  # Neutral
+            if bb_width_pct < 30:
+                posture = "Range / Wait"
+                posture_color = "#888888"
+                posture_explain = "No bias, volatility compressed → await breakout"
+            else:
+                posture = "Range / Neutral"
+                posture_color = "#888888"
+                posture_explain = "No structural edge → tactical only"
+        
+        # Display: 2 cards side by side
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown(f"""
             <div style='background: linear-gradient(135deg, #242b3d 0%, #1a1f2e 100%); 
-                        border: 2px solid {score_color}; border-radius: 16px; 
-                        padding: 2rem; box-shadow: 0 0 20px {score_color}40;'>
-                <div style='color: {score_color}; font-size: 4rem; font-weight: 700; 
-                            font-family: "Courier New", monospace; text-shadow: 0 0 15px {score_color}60;'>
+                        border: 2px solid {bias_color}; border-radius: 12px; 
+                        padding: 1.5rem; text-align: center;'>
+                <div style='color: #888888; font-size: 0.75rem; text-transform: uppercase; 
+                            letter-spacing: 0.05em; margin-bottom: 0.5rem;'>
+                    Technical Bias
+                </div>
+                <div style='color: {bias_color}; font-size: 2.5rem; font-weight: 700; 
+                            font-family: "Courier New", monospace;'>
                     {score:+.1f}
                 </div>
-                <div style='color: #888888; font-size: 0.9rem; margin-top: 0.5rem;'>
-                    Range: -3 to +3
+                <div style='color: {bias_color}; font-size: 1rem; font-weight: 600; margin-top: 0.5rem;'>
+                    {bias_label}
                 </div>
-                <div style='color: #888888; font-size: 0.85rem; margin-top: 1rem; opacity: 0.8;'>
-                    Drivers: Structure {structure_text}, Momentum {momentum_text} → Score {score:+.1f}
+                <div style='color: #888888; font-size: 0.85rem; margin-top: 0.5rem;'>
+                    {bias_meaning}
                 </div>
-            </div>
-            <div style='color: #d0d0d0; font-size: 1.05rem; font-style: italic; margin-top: 1rem;'>
-                {subtitle}
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Show risk flags if any
-        if risk_flags:
-            flags_pills = " ".join([f'<span style="background: rgba(255,68,68,0.2); color: #ff4444; padding: 0.3rem 0.6rem; border-radius: 12px; font-size: 0.8rem; margin: 0 0.25rem;">{flag}</span>' for flag in risk_flags])
-            st.markdown(f"""
-            <div style='text-align: center; margin-top: 0.5rem; margin-bottom: 1rem;'>
-                {flags_pills}
             </div>
             """, unsafe_allow_html=True)
         
-        # Add "View changes if..." trigger line
-        key_levels_list = technical.get('key_levels', [])
-        if key_levels_list:
-            # Find nearest resistance and support
-            resistances = [l for l in key_levels_list if l['type'] == 'Resistance']
-            supports = [l for l in key_levels_list if l['type'] == 'Support']
-            
-            nearest_resistance = min(resistances, key=lambda x: abs(x['distance_pct'])) if resistances else None
-            nearest_support = min(supports, key=lambda x: abs(x['distance_pct'])) if supports else None
-            
-            if nearest_resistance and nearest_support:
-                trigger_text = f"Score upgrades if break above {nearest_resistance['name']} ({nearest_resistance['price']:.4f}); downgrades if break below {nearest_support['name']} ({nearest_support['price']:.4f})."
-            elif nearest_resistance:
-                trigger_text = f"Score upgrades if break above {nearest_resistance['name']} ({nearest_resistance['price']:.4f})."
-            elif nearest_support:
-                trigger_text = f"Score downgrades if break below {nearest_support['name']} ({nearest_support['price']:.4f})."
-            else:
-                trigger_text = ""
-            
-            if trigger_text:
-                st.markdown(f"""
-                <div style='text-align: center; margin-top: 0.5rem; margin-bottom: 2rem;'>
-                    <div style='color: #888888; font-size: 0.85rem; font-style: italic;'>
-                        ⚡ {trigger_text}
-                    </div>
+        with col2:
+            st.markdown(f"""
+            <div style='background: linear-gradient(135deg, #242b3d 0%, #1a1f2e 100%); 
+                        border: 2px solid {posture_color}; border-radius: 12px; 
+                        padding: 1.5rem; text-align: center;'>
+                <div style='color: #888888; font-size: 0.75rem; text-transform: uppercase; 
+                            letter-spacing: 0.05em; margin-bottom: 0.5rem;'>
+                    Trade Posture
                 </div>
-                """, unsafe_allow_html=True)
+                <div style='color: {posture_color}; font-size: 1.5rem; font-weight: 700; margin-top: 1rem;'>
+                    {posture}
+                </div>
+                <div style='color: #d0d0d0; font-size: 0.85rem; margin-top: 1rem; line-height: 1.5;'>
+                    {posture_explain}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # ==================================================================
+        # WHAT WOULD CHANGE THIS? (Deterministic Level Selection)
+        # ==================================================================
+        st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+        st.markdown("### ⚡ What Would Change This?")
+        
+        spot_price = technical['spot']
+        sma_50 = indicators.get('SMA_50')
+        sma_100 = indicators.get('SMA_100')
+        sma_200 = indicators.get('SMA_200')
+        
+        # Configuration
+        PROXIMITY_THRESHOLD = 2.0  # % - levels only matter if within this distance
+        
+        # ==================================================================
+        # A) BIAS-CHANGING LEVELS (max 2)
+        # Rule: These flip structural bias (bullish ↔ neutral ↔ bearish)
+        # ==================================================================
+        bias_levels = []
+        
+        # 200d MA: ALWAYS included (defines trend)
+        if sma_200:
+            dist_pct = abs((sma_200 - spot_price) / spot_price * 100)
+            bias_levels.append({
+                'name': '200d MA',
+                'price': sma_200,
+                'distance_pct': (sma_200 - spot_price) / spot_price * 100,
+                'trigger': 'above' if spot_price < sma_200 else 'below',
+                'effect': 'flips to bullish bias' if spot_price < sma_200 else 'flips to bearish bias'
+            })
+        
+        # 1Y High/Low: Only if within threshold (defines breakout/breakdown regime)
+        year_high = spot_price * 1.02  # Placeholder - would come from technical data
+        year_low = spot_price * 0.98
+        
+        # Check if 1Y high is nearby and would matter
+        # (Only add if it's closer than 200d MA OR if we're already bullish and approaching resistance)
+        
+        # Limit to 2 bias levels
+        bias_levels = bias_levels[:2]
+        
+        # ==================================================================
+        # B) POSTURE-CHANGING LEVELS (max 2)
+        # Rule: These change chase vs fade, not bias
+        # ==================================================================
+        posture_levels = []
+        
+        # Nearest MA cluster (50d / 100d) - these define near-term support/resistance
+        ma_cluster = []
+        if sma_50:
+            ma_cluster.append(('50d MA', sma_50))
+        if sma_100:
+            ma_cluster.append(('100d MA', sma_100))
+        
+        # Sort by distance from spot
+        ma_cluster.sort(key=lambda x: abs(x[1] - spot_price))
+        
+        # Take nearest MA from cluster
+        if ma_cluster:
+            nearest_ma_name, nearest_ma_price = ma_cluster[0]
+            dist_pct = abs((nearest_ma_price - spot_price) / spot_price * 100)
+            
+            if dist_pct < PROXIMITY_THRESHOLD:
+                posture_levels.append({
+                    'name': nearest_ma_name,
+                    'price': nearest_ma_price,
+                    'distance_pct': (nearest_ma_price - spot_price) / spot_price * 100,
+                    'trigger': 'above' if spot_price < nearest_ma_price else 'below',
+                    'effect': 'enables breakout chase' if spot_price < nearest_ma_price else 'forces fade mode'
+                })
+        
+        # RSI stretch: Always relevant for posture (chase vs fade)
+        if rsi:
+            if rsi > 65:
+                posture_levels.append({
+                    'name': 'RSI reset',
+                    'price': None,
+                    'trigger': 'RSI < 60',
+                    'effect': 're-enables dip buying'
+                })
+            elif rsi < 35:
+                posture_levels.append({
+                    'name': 'RSI reset',
+                    'price': None,
+                    'trigger': 'RSI > 40',
+                    'effect': 're-enables rally selling'
+                })
+        
+        # Limit to 2 posture levels
+        posture_levels = posture_levels[:2]
+        
+        # ==================================================================
+        # RENDER
+        # ==================================================================
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("**Bias changes if:**")
+            if bias_levels:
+                for level in bias_levels:
+                    if level['price']:
+                        st.markdown(f"• Break {level['trigger']} **{level['name']}** ({level['price']:.4f}) → {level['effect']}")
+                    else:
+                        st.markdown(f"• {level['trigger']} → {level['effect']}")
+            else:
+                st.markdown("*No nearby bias-changing levels*")
+        
+        with col2:
+            st.markdown("**Posture changes if:**")
+            if posture_levels:
+                for level in posture_levels:
+                    if level['price']:
+                        st.markdown(f"• Break {level['trigger']} **{level['name']}** ({level['price']:.4f}) → {level['effect']}")
+                    else:
+                        st.markdown(f"• {level['trigger']} → {level['effect']}")
+            else:
+                st.markdown("*Current posture stable*")
         
         # ==================================================================
         # ONE PRICE CHART — Visual Truth
@@ -1182,6 +1464,20 @@ with tab3:
     
     if cftc_summary:
         # ==================================================================
+        # COMMENTARY (TOP)
+        # ==================================================================
+        st.markdown(f"""
+        <div style="background: rgba(26, 31, 46, 0.5); border-left: 4px solid #9333EA; 
+                    padding: 1.25rem; margin: 0 0 2rem 0; border-radius: 4px;">
+            <div style="color: #d0d0d0; font-size: 1rem; line-height: 1.7;">
+                <strong>Positioning is not constraining price.</strong> Speculative length is modest and near historical norms, 
+                leaving room for price to move without forced unwinds. Positioning neither confirms nor contradicts the valuation signal 
+                — optionality remains intact.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # ==================================================================
         # POSITIONING SNAPSHOT — Risk Contribution
         # ==================================================================
         st.markdown("### 📊 Positioning Snapshot — EURUSD")
@@ -1246,20 +1542,6 @@ with tab3:
         st.markdown(table_html, unsafe_allow_html=True)
         
         # ==================================================================
-        # FUNCTIONAL COMMENTARY — Not Neutral, But Low Constraint
-        # ==================================================================
-        st.markdown(f"""
-        <div style="background: rgba(26, 31, 46, 0.5); border-left: 4px solid #9333EA; 
-                    padding: 1.25rem; margin: 1.5rem 0; border-radius: 4px;">
-            <div style="color: #d0d0d0; font-size: 1rem; line-height: 1.7;">
-                <strong>Positioning is not constraining price.</strong> Speculative length is modest and near historical norms, 
-                leaving room for price to move without forced unwinds. Positioning neither confirms nor contradicts the valuation signal 
-                — optionality remains intact.
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # ==================================================================
         # Z-SCORE CHART — Risk Visualization
         # ==================================================================
         st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
@@ -1291,7 +1573,7 @@ with tab3:
                 y=cftc_history['z_score'],
                 mode='lines',
                 name='Z-Score (1Y)',
-                line=dict(color='#9333EA', width=3),
+                line=dict(color='#9333EA', width=6),
                 hovertemplate='<b>Z-Score:</b> %{y:.2f}σ<extra></extra>'
             ))
             
