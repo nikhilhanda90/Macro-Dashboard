@@ -144,6 +144,8 @@ INDICATORS = {
         'description': 'Net % of banks tightening credit standards',
         'indicator_type': 'Leading',
         'inverted': True,
+        'use_yoy': False,
+        'use_mom': False,
         'region': 'US'
     },
     'MSACSR': {
@@ -230,6 +232,7 @@ INDICATORS = {
         'description': 'Real PCE in billions of chained 2017 USD (SAAR)',
         'indicator_type': 'Coincident',
         'use_yoy': True,
+        'use_mom': False,
         'region': 'US'
     },
     'GDPC1': {
@@ -239,6 +242,7 @@ INDICATORS = {
         'description': 'Real Gross Domestic Product (billions, chained 2017 USD)',
         'indicator_type': 'Coincident',
         'use_yoy': True,
+        'use_mom': False,
         'region': 'US'
     },
     'DFF': {
@@ -330,6 +334,8 @@ INDICATORS = {
         'frequency': 'quarterly',
         'description': 'Employment Cost Index - Wages and Salaries',
         'indicator_type': 'Lagging',
+        'use_yoy': True,
+        'use_mom': False,
         'region': 'US'
     },
     # 'TEDRATE': {
