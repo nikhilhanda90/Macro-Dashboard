@@ -522,11 +522,11 @@ def load_cftc_positioning():
     except Exception as e:
         return None, None
 
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=86400)
 def load_technical_analysis():
     """
     Generate fresh technical analysis data
-    Runs on first load, then caches for 1 hour
+    Runs on first load, then caches for 24 hours
     """
     try:
         import yfinance as yf
