@@ -874,105 +874,196 @@ def generate_fx_commentary_analyst(val, tech, pos):
     return paragraph, confidence
 
 
-def generate_fx_commentary_executive(val, tech, pos):
+def derive_action(val, tech, pos):
     """
-    Executive/CFO mode: No indicators, no jargon, clean risk framing
+    Deterministic action mapping from Valuation × Technicals × Positioning
     
-    Args: Same as analyst mode
-    Returns: (commentary_paragraph, confidence_level)
+    Returns: (action_verb, dominant_driver_key, flip_condition)
     """
-    # Extract inputs
-    val_z = val.get('fv_z', 0)
+    # Extract states
     val_state = val.get('fv_state', 'fair')
+    val_z = val.get('fv_z', 0)
     val_trend = val.get('mispricing_trend', 'stabilizing')
     
     tech_score = tech.get('bias_score', 0)
     tech_posture = tech.get('trade_posture', 'Range / Wait')
     
-    pos_z = pos.get('z_score', 0)
     pos_state = pos.get('state', 'neutral')
+    pos_z = pos.get('z_score', 0)
     
-    # Same confidence logic as analyst mode
+    # Classify signals
+    val_bearish = (val_state == 'rich')
+    val_bullish = (val_state == 'cheap')
+    val_neutral = (val_state == 'fair')
+    
+    tech_bearish = (tech_score < -1.0 or 'Fade' in tech_posture or 'Sell' in tech_posture)
+    tech_bullish = (tech_score > 1.0 or 'Buy' in tech_posture)
+    tech_neutral = not (tech_bearish or tech_bullish)
+    
+    pos_extreme_long = (pos_state == 'crowded_long' and abs(pos_z) > 1.5)
+    pos_extreme_short = (pos_state == 'crowded_short' and abs(pos_z) > 1.5)
+    
+    # Action Resolution Rules
+    # Priority: If V+T align → act decisively. If conflict → Hold/Fade.
+    
+    if val_bearish and tech_bearish:
+        # Both bearish → Clear sell signal
+        if val_trend == 'stabilizing' or val_trend == 'compressing':
+            action = "Sell on rallies"
+        else:
+            action = "Sell"
+        driver = 'valuation'  # Valuation leads, technicals confirm
+        flip_cond = "macro fundamentals improve or price breaks above key resistance"
+        
+    elif val_bullish and tech_bullish:
+        # Both bullish → Clear buy signal
+        if val_trend == 'stabilizing' or val_trend == 'compressing':
+            action = "Buy dips"
+        else:
+            action = "Buy"
+        driver = 'valuation'  # Valuation leads, technicals confirm
+        flip_cond = "macro fundamentals weaken or price breaks below key support"
+        
+    elif val_bearish and tech_neutral:
+        # Valuation bearish, technicals mixed → Fade rallies
+        action = "Fade rallies"
+        driver = 'valuation'
+        flip_cond = "technicals confirm downside or valuation gap closes"
+        
+    elif val_bullish and tech_neutral:
+        # Valuation bullish, technicals mixed → Buy dips selectively
+        action = "Buy dips"
+        driver = 'valuation'
+        flip_cond = "technicals break down or valuation gap widens further"
+        
+    elif val_neutral and tech_bearish:
+        # Fair value but bearish technicals → Sell on strength
+        action = "Sell on rallies"
+        driver = 'technicals'
+        flip_cond = "price stabilizes and momentum resets"
+        
+    elif val_neutral and tech_bullish:
+        # Fair value but bullish technicals → Buy dips
+        action = "Buy dips"
+        driver = 'technicals'
+        flip_cond = "momentum fades or price breaks support"
+        
+    elif val_bearish and tech_bullish:
+        # Conflict: Rich but momentum up → Cautious, lean fade
+        action = "Hold"
+        driver = 'valuation'  # Valuation dominates in conflict
+        flip_cond = "valuation normalizes or technicals reverse"
+        
+    elif val_bullish and tech_bearish:
+        # Conflict: Cheap but momentum down → Wait for confirmation
+        action = "Hold"
+        driver = 'valuation'  # Valuation dominates in conflict
+        flip_cond = "momentum stabilizes or valuation becomes extreme"
+        
+    else:
+        # All neutral → No edge
+        action = "Hold"
+        driver = 'none'
+        flip_cond = "clear catalyst or regime shift emerges"
+    
+    # Positioning override (only if extreme)
+    if pos_extreme_long and action in ["Buy", "Buy dips"]:
+        action = "Hold"  # Don't chase crowded longs
+        driver = 'positioning'
+        flip_cond = "positioning unwinds or macro strengthens decisively"
+    elif pos_extreme_short and action in ["Sell", "Sell on rallies"]:
+        action = "Hold"  # Don't chase crowded shorts
+        driver = 'positioning'
+        flip_cond = "positioning unwinds or macro weakens decisively"
+    
+    return action, driver, flip_cond
+
+
+def generate_fx_commentary_executive(val, tech, pos):
+    """
+    Executive/CFO mode: ACTION-FIRST COMMENTARY
+    
+    SPEC (NON-NEGOTIABLE):
+    - Sentence 1: Action (starts with action verb, no qualifiers)
+    - Sentence 2: Why (single dominant driver only)
+    - Sentence 3: What changes this (specific condition)
+    
+    Voice: Senior macro PM. Confident, not dramatic. No hedging language.
+    
+    Args: Same as analyst mode
+    Returns: (commentary_paragraph, confidence_level)
+    """
+    # Derive action deterministically
+    action, driver, flip_cond = derive_action(val, tech, pos)
+    
+    # Extract context for confidence + explanations
+    val_state = val.get('fv_state', 'fair')
+    val_z = val.get('fv_z', 0)
+    val_trend = val.get('mispricing_trend', 'stabilizing')
+    tech_score = tech.get('bias_score', 0)
+    tech_posture = tech.get('trade_posture', 'Range / Wait')
+    pos_state = pos.get('state', 'neutral')
+    pos_z = pos.get('z_score', 0)
+    
+    # Confidence logic
     pos_available = (pos_state not in ['neutral', ''] and abs(pos_z) > 0.01)
-    val_bearish = (val_state == 'rich' or val.get('val_regime') in ['fade_rallies', 'mean_reversion'])
-    val_bullish = (val_state == 'cheap' or val.get('val_regime') in ['buy_dips'])
+    val_bearish = (val_state == 'rich')
+    val_bullish = (val_state == 'cheap')
     tech_bearish = (tech_score < -1.0 or 'Fade' in tech_posture or 'Sell' in tech_posture)
     tech_bullish = (tech_score > 1.0 or 'Buy' in tech_posture)
     agreement = (val_bearish and tech_bearish) or (val_bullish and tech_bullish)
-    pos_clean = abs(pos_z) < 1.0
-    pos_fragile = abs(pos_z) > 1.5
     
     if not pos_available:
         confidence = "Medium" if agreement else "Low"
-    elif agreement and pos_clean:
-        confidence = "High"
-    elif agreement and pos_fragile:
-        confidence = "Medium"
+    elif agreement:
+        confidence = "High" if abs(pos_z) < 1.0 else "Medium"
     else:
         confidence = "Low"
     
-    # ===== BUILD EXECUTIVE COMMENTARY (3-4 SENTENCES) =====
+    # ===== SENTENCE 1: ACTION (No qualifiers) =====
+    sent1 = f"**Action: {action}**"
     
-    # Sentence 1: Valuation context
-    if val_state == 'rich' and abs(val_z) >= 1.5:
-        if val_trend == 'widening':
-            sent1 = "EUR looks overvalued, and the imbalance continues to widen"
-        elif val_trend == 'compressing':
-            sent1 = "EUR looks overvalued, but the imbalance is starting to correct"
+    # ===== SENTENCE 2: WHY (Single dominant driver) =====
+    if driver == 'valuation':
+        if val_state == 'rich':
+            if abs(val_z) >= 1.5:
+                why = "EUR is rich vs macro, and nothing here justifies the premium"
+            else:
+                why = "EUR is trading above fair value, limiting upside"
+        elif val_state == 'cheap':
+            if abs(val_z) >= 1.5:
+                why = "EUR is cheap vs macro, and the discount is real"
+            else:
+                why = "EUR is trading below fair value, creating upside"
         else:
-            sent1 = "EUR looks overvalued, though the imbalance is no longer widening"
-    elif val_state == 'rich':
-        sent1 = "EUR appears somewhat overvalued, though not at extreme levels"
-    elif val_state == 'cheap' and abs(val_z) >= 1.5:
-        if val_trend == 'widening':
-            sent1 = "EUR looks undervalued, and the discount continues to grow"
-        elif val_trend == 'compressing':
-            sent1 = "EUR looks undervalued, but the gap to fair value is closing"
+            why = "EUR is near fair value, no valuation edge"
+    
+    elif driver == 'technicals':
+        if tech_bearish:
+            why = "Price structure is breaking down, momentum favors sellers"
+        elif tech_bullish:
+            why = "Price structure is intact, momentum favors buyers"
         else:
-            sent1 = "EUR looks undervalued, though the discount has stabilized"
-    elif val_state == 'cheap':
-        sent1 = "EUR appears somewhat undervalued, creating potential upside"
-    else:
-        sent1 = "EUR is trading near fundamental fair value"
+            why = "Price is stuck in range, no directional conviction"
     
-    # Sentence 2: Risk skew (momentum/direction)
-    if 'Buy' in tech_posture and tech_score > 1.5:
-        sent2 = "Upside momentum appears intact, leaving near-term risk modestly skewed higher"
-    elif 'Fade' in tech_posture or 'Sell' in tech_posture:
-        sent2 = "Upside momentum appears limited, leaving near-term risk modestly skewed to the downside rather than a breakout higher"
-    elif tech_posture == 'Range / Wait':
-        sent2 = "Price action remains largely stable, with no clear directional bias"
-    elif tech_score < -1.5:
-        sent2 = "Downside pressure is building, with risk skewed lower"
-    else:
-        sent2 = "Market direction remains unclear, with balanced near-term risk"
+    elif driver == 'positioning':
+        if pos_state == 'crowded_long':
+            why = "Positioning is crowded long, downside asymmetry dominates"
+        elif pos_state == 'crowded_short':
+            why = "Positioning is crowded short, squeeze risk dominates"
+        else:
+            why = "Positioning is balanced"
     
-    # Sentence 3: Positioning / fragility
-    if not pos_available:
-        sent3 = "Positioning data is unavailable, limiting visibility into potential forced moves"
-    elif pos_state == 'neutral':
-        sent3 = "Positioning is not stretched, suggesting no forced move from speculative flows"
-    elif pos_state == 'crowded_long':
-        sent3 = "Positioning shows crowding on the long side, increasing fragility to negative surprises"
-    elif pos_state == 'crowded_short':
-        sent3 = "Positioning shows crowding on the short side, creating squeeze risk if conditions improve"
     else:
-        sent3 = "Positioning appears balanced"
+        why = "Signals are mixed, no clear edge"
     
-    # Sentence 4: What would change the risk (NO specific levels)
-    if val_state == 'rich' and ('Fade' in tech_posture or 'Sell' in tech_posture):
-        sent4 = "Downside risk would increase if the market weakens materially, while easing pressure would stabilize the outlook"
-    elif val_state == 'cheap' and 'Buy' in tech_posture:
-        sent4 = "Upside risk would increase with market confirmation, while further deterioration would extend the discount"
-    elif tech_posture == 'Range / Wait':
-        sent4 = "A clear catalyst would be needed to establish directional momentum"
-    elif tech_score < -1.5:
-        sent4 = "Further weakness could accelerate downside, while stabilization would reduce near-term risk"
-    else:
-        sent4 = "Market dynamics or policy surprises could materially shift the risk balance"
+    sent2 = why
     
-    # Assemble
-    executive_para = f"{sent1}. {sent2}. {sent3}. {sent4}."
+    # ===== SENTENCE 3: WHAT CHANGES THIS (Specific condition) =====
+    sent3 = f"This flips if {flip_cond}"
+    
+    # Assemble (3 sentences, period-separated)
+    executive_para = f"{sent1}. {sent2}. {sent3}."
     
     return executive_para, confidence
 
