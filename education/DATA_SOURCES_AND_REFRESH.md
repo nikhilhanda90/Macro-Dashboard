@@ -1,7 +1,7 @@
 # Macro View Dashboard - Data Sources & Refresh Schedule
 
-**Last Updated:** December 23, 2024  
-**Production Version:** 1.1
+**Last Updated:** December 24, 2024  
+**Production Version:** 1.2
 
 ---
 
@@ -468,9 +468,9 @@ if indicator.inverted:
 | **US Macro** | FRED API | ✅ Yes | Daily | 24 hours | None |
 | **EU Macro (14)** | FRED API | ✅ Yes | Daily | 24 hours | None |
 | **EU Macro (9)** | Static CSV | ❌ No | Manual | N/A | Update monthly |
-| **EUR/USD Technical** | Yahoo Finance | ✅ Yes | Hourly | 1 hour | None |
-| **FX Valuation (L1)** | Static Predictions | ❌ No | Manual | N/A | Retrain quarterly |
-| **FX Pressure (L2)** | Static Predictions | ❌ No | Manual | N/A | Retrain quarterly |
+| **EUR/USD Technical** | Yahoo Finance | ✅ Yes | Daily | 24 hours | None |
+| **FX Valuation (L1)** | Trained Model | ❌ No | Quarterly | N/A | Run `RETRAIN_FX_MODELS.bat` |
+| **FX Pressure (L2)** | Trained Model | ❌ No | Quarterly | N/A | Run `RETRAIN_FX_MODELS.bat` |
 | **CFTC Positioning** | Static Sample | ❌ No | Manual | N/A | Implement auto-fetch |
 
 ---
@@ -489,10 +489,96 @@ if indicator.inverted:
 - ⚠️ Eurozone CSV indicators (9 files)
 - Check for missing data / API failures
 
-### Quarterly (Manual)
-- ⚠️ Retrain FX Valuation models
-- ⚠️ Regenerate Layer 1 & 2 predictions
-- Review indicator selection / model performance
+### Quarterly (Manual - FX Model Retraining)
+- ⚠️ Retrain FX Valuation + Pressure models
+- See detailed process below ↓
+
+---
+
+## 🔄 HOW TO RETRAIN FX MODELS
+
+### When to Retrain
+
+**Routine (Every Quarter):**
+- End of March → Incorporate Q1 data
+- End of June → Incorporate Q2 data
+- End of September → Incorporate Q3 data
+- End of December → Incorporate Q4 data
+
+**Ad-Hoc (Regime Shift):**
+- Fed/ECB policy pivot (rate cuts/hikes begin)
+- Major crisis (2008-style, COVID-style)
+- Model performance degrades (fair value diverging badly)
+
+---
+
+### Retraining Process (One-Click)
+
+**Step 1:** Double-click the batch file
+```
+C:\Users\NikhilHanda\RETRAIN_FX_MODELS.bat
+```
+
+**What it does:**
+1. Retrains Layer 1 (Monthly Valuation Model) → ~2-5 minutes
+   - Fetches fresh monthly macro data (FRED API)
+   - Engineers features (yield diffs, spreads, inflation)
+   - Retrains Elastic Net model
+   - Outputs: `elasticnet_predictions.csv`, `layer1_recommendation.json`
+
+2. Retrains Layer 2 (Weekly Pressure Model) → ~3-7 minutes
+   - Fetches weekly market data (yields, VIX, credit spreads)
+   - Engineers weekly features (momentum, flow, volatility)
+   - Retrains XGBoost model for Δz prediction
+   - Outputs: `xgboost_delta_z_predictions.csv`, `layer2_recommendation.json`
+
+3. Regenerates Decision Table + Charts → ~30 seconds
+   - Combines Layer 1 + Layer 2 outputs
+   - Generates decision table (Valuation × Pressure)
+   - Creates 4 charts (Fair Value, Mispricing Z-Score, Pressure Panel, Decision Map)
+   - Outputs: 1 JSON + 4 PNG files
+
+4. Auto-copies outputs to GitHub folder
+   - From: `C:\Users\NikhilHanda\FX Views\5_outputs\`
+   - To: `C:\Users\NikhilHanda\Documents\Macro-Dashboard\FX Views\5_outputs\`
+
+**Total Runtime:** ~5-10 minutes
+
+---
+
+**Step 2:** Open GitHub Desktop
+
+You'll see **5 files changed** in `FX Views\5_outputs\`:
+- `eurusd_fx_views_decision.json`
+- `eurusd_fxviews_fair_value_monthly.png`
+- `eurusd_fxviews_mispricing_z_monthly.png`
+- `eurusd_fxviews_pressure_weekly.png`
+- `eurusd_fxviews_decision_map.png`
+
+---
+
+**Step 3:** Commit + Push
+
+**Commit message:**
+```
+Retrain FX models Q1 2025: Update valuation & pressure
+```
+
+Click **"Push origin"**
+
+Streamlit Cloud auto-deploys in ~2 minutes.
+
+---
+
+**Step 4:** Verify on Dashboard
+
+Visit: https://macro-dashboard-w4b8ydzlxgeowjnrkchvkd.streamlit.app/
+
+Navigate to **FX Insights** → Check that:
+- Fair Value updated
+- Mispricing Z-score reflects latest data
+- Charts show current month/week
+- Decision table reflects new regime
 
 ---
 
@@ -846,6 +932,7 @@ technical_bias = 3.0 * (0.5*S_norm + 0.5*M_norm)  # [-3, +3]
 ---
 
 **Version History:**
+- V1.2 (Dec 24, 2024): Added FX model retraining process, updated cache settings (technicals 1h→24h), fixed GDP series
 - V1.1 (Dec 23, 2024): Added comprehensive technical methodology, FX model details, UI/UX design principles
 - V1.0 (Dec 22, 2024): Initial production documentation
 
