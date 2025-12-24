@@ -181,12 +181,14 @@ class DataFetcher:
                     print(f"  [ERROR] Derived spread requires 'spread_component_1/2' or 'derived_series_1/2'")
                     return None
                 
-                # Fetch both series - find configs in INDICATOR_CONFIG_V2
-                config_1 = next((item for item in config.INDICATOR_CONFIG_V2 if item.get('series_id') == series_1_id), None)
-                config_2 = next((item for item in config.INDICATOR_CONFIG_V2 if item.get('series_id') == series_2_id), None)
+                # Fetch both series - find configs in INDICATORS dict
+                config_1 = config.INDICATORS.get(series_1_id)
+                config_2 = config.INDICATORS.get(series_2_id)
                 
                 if not config_1 or not config_2:
                     print(f"  [ERROR] Could not find config for {series_1_id} or {series_2_id}")
+                    print(f"  [DEBUG] Looking for: {series_1_id}, {series_2_id}")
+                    print(f"  [DEBUG] Available keys: {list(config.INDICATORS.keys())[:10]}...")
                     return None
                 
                 result_1 = self.get_indicator(series_1_id, config_1)
@@ -325,8 +327,8 @@ class DataFetcher:
             except Exception as e:
                 print(f"  [ERROR] CSV load failed for {series_id}: {str(e)}")
                 df = None
-        else:
-            # Fetch from FRED (default)
+        elif source not in ['derived', 'derived_file']:
+            # Fetch from FRED (default) - but NOT for derived indicators
             df = self.get_fred_series(series_id)
             
             # Apply freshness check for FRED data too

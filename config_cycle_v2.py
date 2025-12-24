@@ -232,6 +232,15 @@ INDICATORS = {
         'use_yoy': True,
         'region': 'US'
     },
+    'GDPC1': {
+        'name': 'Real GDP',
+        'category': 'Growth',
+        'frequency': 'quarterly',
+        'description': 'Real Gross Domestic Product (billions, chained 2017 USD)',
+        'indicator_type': 'Coincident',
+        'use_yoy': True,
+        'region': 'US'
+    },
     'DFF': {
         'name': 'Federal Funds Rate',
         'category': 'Fixed Income',
