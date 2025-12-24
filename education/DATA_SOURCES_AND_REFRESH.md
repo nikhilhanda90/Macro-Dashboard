@@ -1,6 +1,6 @@
 # Macro View Dashboard - Data Sources & Refresh Schedule
 
-**Last Updated:** December 24, 2024  
+**Last Updated:** December 24, 2024 (Cache optimization + retraining docs)  
 **Production Version:** 1.2
 
 ---

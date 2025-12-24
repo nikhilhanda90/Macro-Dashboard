@@ -1,6 +1,7 @@
 """
 FX Insights - EURUSD Analysis
 Nikhil's comprehensive FX view with Valuation, Technicals, and Positioning
+Last updated: 2025-12-24 - Cache fix applied
 """
 import streamlit as st
 import streamlit.components.v1 as components
