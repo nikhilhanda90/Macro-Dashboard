@@ -173,11 +173,12 @@ class DataFetcher:
             derived_type = indicator_config.get('derived_type', 'spread')
             
             if derived_type == 'spread':
-                series_1_id = indicator_config.get('derived_series_1')
-                series_2_id = indicator_config.get('derived_series_2')
+                # Support both naming conventions
+                series_1_id = indicator_config.get('spread_component_1') or indicator_config.get('derived_series_1')
+                series_2_id = indicator_config.get('spread_component_2') or indicator_config.get('derived_series_2')
                 
                 if not series_1_id or not series_2_id:
-                    print(f"  [ERROR] Derived spread requires 'derived_series_1' and 'derived_series_2'")
+                    print(f"  [ERROR] Derived spread requires 'spread_component_1/2' or 'derived_series_1/2'")
                     return None
                 
                 # Fetch both series - find configs in INDICATOR_CONFIG_V2
