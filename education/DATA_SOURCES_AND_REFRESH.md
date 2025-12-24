@@ -38,7 +38,7 @@
 | Nonfarm Payrolls | PAYEMS | Monthly | Job creation |
 | Industrial Production | INDPRO | Monthly | Factory output |
 | Retail Sales | RSXFS | Monthly | Consumer spending |
-| Real GDP (QoQ) | GDPC1 | Quarterly | Economic growth |
+| Real GDP (QoQ SAAR) | A191RL1Q225SBEA | Quarterly | Economic growth |
 
 ### Lagging Indicators (4)
 | Indicator | Series ID | Frequency | Description |

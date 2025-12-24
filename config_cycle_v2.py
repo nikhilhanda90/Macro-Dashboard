@@ -235,13 +235,13 @@ INDICATORS = {
         'use_mom': False,
         'region': 'US'
     },
-    'GDPC1': {
+    'A191RL1Q225SBEA': {
         'name': 'Real GDP',
         'category': 'Growth',
         'frequency': 'quarterly',
-        'description': 'Real Gross Domestic Product (billions, chained 2017 USD)',
+        'description': 'Real GDP growth rate (QoQ, Seasonally Adjusted Annual Rate)',
         'indicator_type': 'Coincident',
-        'use_yoy': True,
+        'use_yoy': False,
         'use_mom': False,
         'region': 'US'
     },

@@ -34,6 +34,7 @@ US_INDICATOR_CONFIG = [
     {"series_id": "INDPRO", "name": "Industrial Production", "bucket": "coincident", "category": "Growth", "frequency": "monthly", "use_yoy": False, "use_mom": False, "inverted": False, "type_tag": "growth_activity", "trend_method": "level", "region": "US"},
     {"series_id": "RSXFS", "name": "Retail Sales", "bucket": "coincident", "category": "Growth", "frequency": "monthly", "use_yoy": True, "use_mom": False, "inverted": False, "type_tag": "growth_activity", "trend_method": "yoy", "region": "US"},
     {"series_id": "PCECC96", "name": "Real Personal Consumption", "bucket": "coincident", "category": "Growth", "frequency": "quarterly", "use_yoy": True, "use_mom": False, "inverted": False, "type_tag": "growth_activity", "trend_method": "yoy", "region": "US"},
+    {"series_id": "A191RL1Q225SBEA", "name": "Real GDP", "bucket": "coincident", "category": "Growth", "frequency": "quarterly", "use_yoy": False, "use_mom": False, "inverted": False, "type_tag": "growth_activity", "trend_method": "level", "region": "US"},
     {"series_id": "DFF", "name": "Federal Funds Rate", "bucket": "coincident", "category": "Fixed Income", "frequency": "daily", "use_yoy": False, "use_mom": False, "inverted": False, "type_tag": "policy_rate", "trend_method": "level", "region": "US"},
     {"series_id": "SOFR", "name": "SOFR", "bucket": "coincident", "category": "Fixed Income", "frequency": "daily", "use_yoy": False, "use_mom": False, "inverted": False, "type_tag": "policy_rate", "trend_method": "level", "region": "US"},
     {"series_id": "MORTGAGE30US", "name": "30Y Mortgage Rate", "bucket": "coincident", "category": "Housing", "frequency": "weekly", "use_yoy": False, "use_mom": False, "inverted": False, "type_tag": "mortgage_rate", "trend_method": "level", "region": "US"},
@@ -206,6 +207,7 @@ INDICATOR_FUN_LINE = {
     "INDPRO":      "A snapshot of how busy U.S. factories really are.",
     "RSXFS":       "The country's checkout-counter mood.",
     "PCECC96":     "The engine driving most of America's GDP.",
+    "A191RL1Q225SBEA": "The scoreboard for the entire economy.",
     "DFF":         "The benchmark steering every dollar borrowed.",
     "SOFR":        "Today's foundation for floating-rate markets.",
     "MORTGAGE30US":"The gatekeeper of American home affordability.",
@@ -293,6 +295,8 @@ INDICATOR_NARRATIVES = {
     "RSXFS": "Advance Retail Sales (millions, not seasonally adjusted). Captures consumer spending on goods (excludes services). YoY growth shows the strength of household consumption, the largest GDP component.",
     
     "PCECC96": "Real Personal Consumption Expenditures (billions, chained 2017 dollars, SAAR). The Fed's preferred measure of consumer spending adjusted for inflation. YoY growth tracks the health of the consumer—the economy's main engine.",
+    
+    "A191RL1Q225SBEA": "Real Gross Domestic Product (Percent Change from Preceding Period, Seasonally Adjusted Annual Rate). The headline GDP growth number reported quarterly. Positive = expansion, negative = contraction. Two consecutive negative quarters = technical recession.",
     
     "DFF": "Effective Federal Funds Rate. The overnight interbank lending rate targeted by the Federal Reserve. The primary tool of US monetary policy. Rising rates tighten financial conditions; falling rates ease them.",
     
