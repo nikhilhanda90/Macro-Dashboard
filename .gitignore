@@ -13,30 +13,30 @@ venv/
 env/
 ENV/
 
-# IDE
+# IDEs
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Streamlit
-.streamlit/secrets.toml
+# Secrets (IMPORTANT - never commit API keys!)
+secrets.toml
+.env
+*.key
 
-# Data (keep sample data, ignore large files)
-*.pkl.bak
-*.csv.bak
+# Large data files (optional - if you want to exclude large CSVs)
+# *.csv
+
+# Model files (optional - if models are too large)
+# *.pkl
 
 # Logs
 *.log
 
-# Jupyter
-.ipynb_checkpoints/
-
-# Environment
-.env
-
+# Temporary files
+*.tmp
+*.bak

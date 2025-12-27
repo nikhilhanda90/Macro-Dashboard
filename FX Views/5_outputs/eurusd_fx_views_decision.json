@@ -1,17 +1,33 @@
 {
-  "inputs": {
-    "z_val": 1.3205542978126543,
-    "val_bucket": "RICH_STRETCH",
-    "val_sign": "rich",
-    "delta_z_pred": -0.7511118650436401,
-    "pressure_dir": "compress",
-    "pressure_conf": "high"
+  "pair": "EURUSD",
+  "regime_label": "Rich + Compressing Pressure",
+  "nikhil_view": "EURUSD is rich versus macro fair value, and pressure is starting to fade. Bias: fade rallies, don't chase breakouts. This view breaks if compression fails and upside momentum re-accelerates. Pressure confidence is low \u2014 treat this as a tactical bias, not conviction.",
+  "layers": {
+    "valuation": {
+      "signal": "Rich",
+      "status": "2.52\u03c3 (Break)",
+      "spot": 1.1735,
+      "fair_value": 1.101747729776945,
+      "z_score": 2.520943533286963,
+      "date": "2025-09-30"
+    },
+    "pressure": {
+      "signal": "Compressing",
+      "status": "Compressing (43% conf, Low)",
+      "label": "compress",
+      "prob_expand": 0.4345507137980137,
+      "confidence": "low",
+      "date": "2025-12-26"
+    },
+    "technical": {
+      "signal": "Bullish",
+      "status": "Bullish (Score: 2.5)"
+    },
+    "positioning": {
+      "signal": "Neutral",
+      "status": "Neutral (68th percentile)"
+    }
   },
-  "stance": {
-    "stance_title": "Overvaluation Fading",
-    "stance_badge": "Fade",
-    "stance_summary": "EUR looks rich vs macro, and pressure suggests mispricing is compressing.",
-    "watchouts": "Momentum bursts can extend rallies temporarily.",
-    "action_bias": "Mean-revert"
-  }
+  "implication": "Overvaluation fading \u2192 fade rallies, but trend is supportive",
+  "generated_at": "2025-12-26 20:14:31"
 }

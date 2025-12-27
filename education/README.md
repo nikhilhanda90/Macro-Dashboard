@@ -23,22 +23,39 @@ Learn about:
 
 ---
 
+## 🚀 Deployment & Updates
+
+### Initial Setup (One Time)
+1. **Push to GitHub:** `git add . && git commit -m "Initial" && git push`
+2. **Deploy on Streamlit Cloud:** https://share.streamlit.io (connect repo)
+3. **Add Secret:** `FRED_API_KEY = "your_key"` in Streamlit settings
+4. **Deploy!** Dashboard goes live in 2-3 minutes
+
+### Weekly Maintenance (Every Tuesday)
+1. **Run:** Double-click `WEEKLY_UPDATE.bat` (generates FX Views)
+2. **Push:** `git add FX Views/*outputs/* && git commit -m "Update FX" && git push`
+3. **Done!** Streamlit auto-deploys in 1-2 minutes
+
+📖 **Full Guide:** See `/DEPLOYMENT_CHECKLIST.md` in project root
+
+---
+
 ## 🎯 Quick Reference
 
 ### What Updates Automatically?
-✅ US Macro (23 indicators) - Daily via FRED API  
-✅ EU Macro (14 indicators) - Daily via FRED API  
-✅ EUR/USD Technicals - Hourly via Yahoo Finance  
+✅ US Macro (23 indicators) - FRED API (real-time)  
+✅ EU Macro (9 indicators) - FRED API (real-time)  
+✅ Technicals - Yahoo Finance (daily)  
+✅ CFTC Positioning - CFTC website (weekly auto-fetch)
 
-### What Requires Manual Updates?
-⚠️ 9 Eurozone CSV indicators - Monthly  
-⚠️ FX Valuation models - Quarterly (retrain + regenerate)  
-⚠️ CFTC Positioning - Weekly (pending auto-implementation)  
+### What Needs Weekly Push?
+⚠️ FX Valuation Charts - Model outputs (run `WEEKLY_UPDATE.bat` → push)  
+⚠️ 8 Eurozone CSVs - Manual update (monthly)
 
 ### Cache Settings
-- **Macro indicators:** 24 hours
-- **EUR/USD technicals:** 1 hour
-- **Manual refresh:** "Clear Cache" button in sidebar
+- **Macro indicators:** 1 hour (Streamlit cache)
+- **FX Views:** Static files (update via push)
+- **Manual refresh:** Browser Ctrl+F5
 
 ---
 

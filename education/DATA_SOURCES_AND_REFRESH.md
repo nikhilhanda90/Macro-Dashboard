@@ -902,6 +902,61 @@ technical_bias = 3.0 * (0.5*S_norm + 0.5*M_norm)  # [-3, +3]
 
 ---
 
+## 🔄 FX MODEL UPDATE PROCESS
+
+### Weekly Prediction Updates (Routine)
+
+**Purpose:** Keep FX predictions fresh with latest data WITHOUT retraining models
+
+**Frequency:** Every Monday morning (or after major releases)
+
+**Process:**
+1. Navigate to: `C:\Users\NikhilHanda\FX Views\`
+2. Double-click: `UPDATE_FX_PREDICTIONS_WEEKLY.bat`
+3. Wait ~2-3 minutes for completion
+4. Commit and push to GitHub
+5. Live dashboard updates automatically
+
+**What Gets Updated:**
+- ✅ Monthly Fair Value (latest macro data from FRED)
+- ✅ Mispricing Z-score (how rich/cheap vs FV)
+- ✅ Regime labels (In-line / Stretch / Break)
+- ✅ Weekly pressure signals (compress / expand)
+- ✅ All 4 valuation charts regenerated
+
+**What Stays Frozen:**
+- ❄️ Model coefficients (ElasticNet, XGBoost from 2024 training)
+- ❄️ Training sigma (for Z-score calculations)
+
+**Why Frozen Through 2025?**
+- Consistency: Same framework all year
+- Comparability: Signals mean the same thing over time
+- Discipline: Avoid overfitting to recent noise
+
+### Annual Model Retraining (End of Year)
+
+**When:** End of 2025 (after full year of new data)
+
+**Purpose:** Update model coefficients with all 2025 data
+
+**Process:**
+1. Run full data fetch and feature engineering
+2. Retrain ElasticNet (Layer 1) and XGBoost (Layer 2)
+3. Validate on holdout set
+4. Update model files and documentation
+5. Deploy fresh models for 2026
+
+**Files Updated:**
+- `2_layer1_models/fx_layer1_outputs/all_models.pkl`
+- `3_layer2_models/fx_layer2_outputs/all_models.pkl`
+- All prediction CSVs and charts
+
+**Documentation:**
+- See: `FX Views\WEEKLY_UPDATE_INSTRUCTIONS.md` for detailed guide
+- See: `Desktop\FX_WEEKLY_UPDATE_SYSTEM.md` for system overview
+
+---
+
 ## 📞 DATA ISSUES & TROUBLESHOOTING
 
 ### Indicator Missing / "No data" Error
@@ -920,6 +975,17 @@ technical_bias = 3.0 * (0.5*S_norm + 0.5*M_norm)  # [-3, +3]
 **Cause:** Not implemented yet (V1.0 limitation)  
 **Fix:** Wait for V1.1 auto-fetch implementation
 
+### FX Predictions Look Stale
+**Cause:** Weekly update batch file hasn't been run  
+**Fix:** Run `FX Views\UPDATE_FX_PREDICTIONS_WEEKLY.bat`
+
+### Weekly Update Fails
+**Cause:** FRED API rate limit, missing model files, or network issue  
+**Fix:** 
+1. Wait 5 minutes and retry
+2. Check that `all_models.pkl` exists in both layer1 and layer2 outputs folders
+3. Check error messages in console output
+
 ---
 
 ## 📚 DATA SOURCE LINKS
@@ -932,6 +998,7 @@ technical_bias = 3.0 * (0.5*S_norm + 0.5*M_norm)  # [-3, +3]
 ---
 
 **Version History:**
+- V1.3 (Jan 31, 2025): Added automated weekly FX prediction update system, models frozen through 2025
 - V1.2 (Dec 24, 2024): Added FX model retraining process, updated cache settings (technicals 1h→24h), fixed GDP series
 - V1.1 (Dec 23, 2024): Added comprehensive technical methodology, FX model details, UI/UX design principles
 - V1.0 (Dec 22, 2024): Initial production documentation
