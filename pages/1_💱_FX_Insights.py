@@ -307,7 +307,7 @@ def load_positioning_summary():
 
 st.markdown("""
 <div style='text-align: center; margin: 40px 0 50px 0;'>
-    <div style='font-size: 80px; margin-bottom: 10px;'>💱</div>
+    <div style='font-size: 80px; margin-bottom: 10px;'>🏦</div>
     <div style='font-size: 3.5rem; font-weight: 800; letter-spacing: 0.02em; color: #ffffff;'>
         FX Insights — EURUSD
     </div>
