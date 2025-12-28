@@ -137,48 +137,55 @@ st.markdown("""
         margin-top: 5px;
     }
     
-    /* === Sidebar Navigation Links (More Pronounced) === */
+    /* === SIDEBAR NAVIGATION (SUPER PROMINENT) === */
     [data-testid="stSidebarNav"] {
-        background-color: #1a1a1a;
-        padding: 15px;
-        border-radius: 10px;
-        margin-bottom: 20px;
+        background-color: #0a0a0a;
+        padding: 20px 15px;
+        border-radius: 12px;
+        margin-bottom: 25px;
+        border: 2px solid #00ff80;
+        box-shadow: 0 0 20px rgba(0, 255, 128, 0.3);
     }
     
     [data-testid="stSidebarNav"] ul {
         padding: 0 !important;
+        margin: 0 !important;
     }
     
     [data-testid="stSidebarNav"] li {
-        margin: 8px 0 !important;
+        margin: 12px 0 !important;
+        list-style: none !important;
     }
     
     [data-testid="stSidebarNav"] a {
-        background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%) !important;
+        background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%) !important;
         border: 2px solid #00ff80 !important;
-        border-radius: 8px !important;
-        padding: 12px 16px !important;
+        border-radius: 10px !important;
+        padding: 16px 20px !important;
         color: #00ff80 !important;
-        font-weight: 600 !important;
-        font-size: 16px !important;
+        font-weight: 700 !important;
+        font-size: 18px !important;
         text-decoration: none !important;
         display: block !important;
         transition: all 0.3s ease !important;
-        box-shadow: 0 0 15px rgba(0, 255, 128, 0.2) !important;
+        box-shadow: 0 0 15px rgba(0, 255, 128, 0.3) !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
     }
     
     [data-testid="stSidebarNav"] a:hover {
-        background: linear-gradient(135deg, #0a3d2e 0%, #0a0a0a 100%) !important;
+        background: linear-gradient(135deg, #00ff80 0%, #00cc66 100%) !important;
+        color: #000000 !important;
         border-color: #00ff80 !important;
-        box-shadow: 0 0 25px rgba(0, 255, 128, 0.4) !important;
-        transform: translateX(4px) !important;
+        box-shadow: 0 0 25px rgba(0, 255, 128, 0.6) !important;
+        transform: translateX(5px) !important;
     }
     
-    [data-testid="stSidebarNav"] li[aria-current="page"] a {
+    [data-testid="stSidebarNav"] a[aria-current="page"] {
         background: linear-gradient(135deg, #00ff80 0%, #00cc66 100%) !important;
         color: #000000 !important;
         font-weight: 800 !important;
-        box-shadow: 0 0 30px rgba(0, 255, 128, 0.6) !important;
+        box-shadow: 0 0 30px rgba(0, 255, 128, 0.7) !important;
     }
 </style>
 """, unsafe_allow_html=True)
