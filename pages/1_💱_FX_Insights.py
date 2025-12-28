@@ -305,7 +305,14 @@ def load_positioning_summary():
 # MAIN
 # =====================================================================
 
-st.markdown('<h1 style="font-size: 3rem; font-weight: 700;">📐 FX Insights — EURUSD</h1>', unsafe_allow_html=True)
+st.markdown("""
+<div style='text-align: center; margin: 40px 0 50px 0;'>
+    <div style='font-size: 80px; margin-bottom: 10px;'>💱</div>
+    <div style='font-size: 3.5rem; font-weight: 800; letter-spacing: 0.02em; color: #ffffff;'>
+        FX Insights — EURUSD
+    </div>
+</div>
+""", unsafe_allow_html=True)
 st.markdown("---")
 
 # Load all data

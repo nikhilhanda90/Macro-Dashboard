@@ -24,7 +24,10 @@ st.set_page_config(
     page_title="Macro Insights — Nikhil Dashboard",
     page_icon="📊",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
+    menu_items={
+        'About': "Macro Dashboard by Nikhil"
+    }
 )
 
 def format_indicator_value(series_id, raw_value):
@@ -938,7 +941,14 @@ def create_collapsible_indicators(analysis_results, indicator_type, region, expl
             st.markdown("---")
 
 def main():
-    st.markdown('<h1 style="font-size: 3rem; font-weight: 700;">🌍 Macro Insights</h1>', unsafe_allow_html=True)
+    st.markdown("""
+    <div style='text-align: center; margin: 40px 0 50px 0;'>
+        <div style='font-size: 80px; margin-bottom: 10px;'>🌍</div>
+        <div style='font-size: 3.5rem; font-weight: 800; letter-spacing: 0.02em; color: #ffffff;'>
+            Macro Insights
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     st.markdown("---")
     
     # Show loading status
@@ -1040,14 +1050,14 @@ def main():
         st.markdown(f"""
         <div style='margin: 30px 0 20px 0;'>
             <div style='font-size: 48px; font-weight: 900; letter-spacing: 0.05em; color: #00ff80; line-height: 1.2;'>
-                {flag} {region_display}
+                {flag}
             </div>
         </div>
         """, unsafe_allow_html=True)
         
         st.markdown(f"""
         <div style='background-color: #1a1a1a; padding: 25px 30px; border-radius: 10px; border-left: 5px solid #00ff80; margin: 0 0 35px 0;'>
-            <div style='font-size: 19px; line-height: 1.7; color: #e8e8e8; font-weight: 400;'>
+            <div style='font-size: 22px; line-height: 1.8; color: #e8e8e8; font-weight: 400;'>
                 {nikhil_take}
             </div>
         </div>
