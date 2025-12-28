@@ -374,8 +374,36 @@ INDICATOR_NARRATIVES = {
 # ============================================================================
 
 def get_config_df() -> pd.DataFrame:
-    """Return the indicator config as a DataFrame"""
-    return pd.DataFrame(US_INDICATOR_CONFIG)
+    """
+    Return the indicator config as a DataFrame
+    Includes both US and Eurozone indicators from config_cycle_v2.py
+    """
+    try:
+        from config_cycle_v2 import INDICATORS
+        
+        # Convert INDICATORS dict to list of records
+        config_list = []
+        for series_id, config in INDICATORS.items():
+            record = {
+                'series_id': series_id,
+                'name': config.get('name', series_id),
+                'category': config.get('category', 'Unknown'),
+                'frequency': config.get('frequency', 'unknown'),
+                'use_yoy': config.get('use_yoy', False),
+                'use_mom': config.get('use_mom', False),
+                'inverted': config.get('inverted', False),
+                'type_tag': config.get('type_tag', ''),
+                'trend_method': config.get('trend_method', 'level'),
+                'region': config.get('region', 'US'),
+                'indicator_type': config.get('indicator_type', ''),
+                'bucket': config.get('indicator_type', '').lower() if config.get('indicator_type') else ''
+            }
+            config_list.append(record)
+        
+        return pd.DataFrame(config_list)
+    except ImportError:
+        # Fallback to US_INDICATOR_CONFIG if config_cycle_v2 not available
+        return pd.DataFrame(US_INDICATOR_CONFIG)
 
 def get_interpretation(type_tag: str, direction: str) -> str:
     """Get interpretation text for a given type_tag and direction"""

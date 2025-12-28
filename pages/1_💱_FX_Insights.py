@@ -136,6 +136,50 @@ st.markdown("""
         border-left: 3px solid #ff6b35;
         margin-top: 5px;
     }
+    
+    /* === Sidebar Navigation Links (More Pronounced) === */
+    [data-testid="stSidebarNav"] {
+        background-color: #1a1a1a;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    
+    [data-testid="stSidebarNav"] ul {
+        padding: 0 !important;
+    }
+    
+    [data-testid="stSidebarNav"] li {
+        margin: 8px 0 !important;
+    }
+    
+    [data-testid="stSidebarNav"] a {
+        background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%) !important;
+        border: 2px solid #00ff80 !important;
+        border-radius: 8px !important;
+        padding: 12px 16px !important;
+        color: #00ff80 !important;
+        font-weight: 600 !important;
+        font-size: 16px !important;
+        text-decoration: none !important;
+        display: block !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 0 15px rgba(0, 255, 128, 0.2) !important;
+    }
+    
+    [data-testid="stSidebarNav"] a:hover {
+        background: linear-gradient(135deg, #0a3d2e 0%, #0a0a0a 100%) !important;
+        border-color: #00ff80 !important;
+        box-shadow: 0 0 25px rgba(0, 255, 128, 0.4) !important;
+        transform: translateX(4px) !important;
+    }
+    
+    [data-testid="stSidebarNav"] li[aria-current="page"] a {
+        background: linear-gradient(135deg, #00ff80 0%, #00cc66 100%) !important;
+        color: #000000 !important;
+        font-weight: 800 !important;
+        box-shadow: 0 0 30px rgba(0, 255, 128, 0.6) !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -261,8 +305,7 @@ def load_positioning_summary():
 # MAIN
 # =====================================================================
 
-st.markdown('<h1 style="font-size: 3rem; font-weight: 700;">📐 FX Views — EURUSD</h1>', unsafe_allow_html=True)
-st.markdown("**Decision first, evidence second. Single vertical narrative flow.**")
+st.markdown('<h1 style="font-size: 3rem; font-weight: 700;">📐 FX Insights — EURUSD</h1>', unsafe_allow_html=True)
 st.markdown("---")
 
 # Load all data
@@ -277,146 +320,115 @@ tech_data = load_technical_summary()
 pos_data, pos_history = load_positioning_summary()
 
 # =====================================================================
-# TOP: FX Decision Summary (NOT NUMBERED, ALWAYS VISIBLE)
+# TOP: SYSTEM STATE + FX DECISION SUMMARY
 # =====================================================================
-st.markdown("### 💬 FX Decision Summary")
 
-# Regime label
-regime_label = decision.get('regime_label', 'N/A')
-# Parse the nikhil_view into structured parts
-nikhil_view = decision.get('nikhil_view', 'View not available.')
 layers = decision.get('layers', {})
 
-# Extract parts from nikhil_view (sentence 1 = state, sentence 2 = bias, sentence 3 = breaker)
-sentences = nikhil_view.split('. ')
-state_text = sentences[0] if len(sentences) > 0 else ''
-bias_text = sentences[1] if len(sentences) > 1 else ''
-breaker_text = '. '.join(sentences[2:]) if len(sentences) > 2 else ''
+# Get CFO view and analyst view
+cfo_view = decision.get('cfo_view', 'View not available.')
+analyst_view = decision.get('analyst_view', 'Detailed view not available.')
 
-# Extract just the action from bias text (after "Bias: ")
-if 'Bias:' in bias_text:
-    action_text = bias_text.split('Bias:')[1].strip()
-else:
-    action_text = bias_text
+# Parse CFO view (ACTION|||... \n CONDITIONS|||...)
+cfo_lines = cfo_view.split('\n')
+action_text = ''
+conditions_text = ''
 
-# Regime headline (LARGEST text on page)
+for line in cfo_lines:
+    if '|||' in line:
+        label, content = line.split('|||', 1)
+        if label.strip() == 'ACTION':
+            action_text = content.strip()
+        elif label.strip() == 'CONDITIONS':
+            conditions_text = content.strip()
+
+# TOP SECTION - "What do I do?" (2 lines)
 st.markdown(f"""
-<div style='text-align: center; margin: 30px 0 20px 0;'>
-    <div style='font-size: 48px; font-weight: 900; letter-spacing: 0.05em; color: #ff6b35; text-transform: uppercase; line-height: 1.1;'>
-        {regime_label.replace(' + ', ' — ').replace('Pressure', '').replace('pressure', '').strip()}
+<div style='margin: 30px 0 10px 0;'>
+    <div style='font-size: 18px; font-weight: 700; color: #999; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 15px;'>
+        ACTION
     </div>
-</div>
-""", unsafe_allow_html=True)
-
-# Actionable bias (large, on its own line)
-st.markdown(f"""
-<div style='text-align: center; margin: 25px 0 15px 0;'>
-    <div style='font-size: 26px; font-weight: 700; color: #fff; line-height: 1.4;'>
+    <div style='font-size: 26px; line-height: 1.5; color: #ff6b35; font-weight: 700; margin-bottom: 20px;'>
         {action_text}
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# What breaks it (smaller, italic)
 st.markdown(f"""
-<div style='text-align: center; margin: 10px 0 30px 0;'>
-    <div style='font-size: 16px; font-style: italic; color: #999; line-height: 1.5;'>
-        {breaker_text}
+<div style='margin: 0 0 40px 0;'>
+    <div style='font-size: 18px; font-weight: 700; color: #999; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px;'>
+        CONDITIONS
+    </div>
+    <div style='font-size: 19px; line-height: 1.6; color: #e0e0e0; font-weight: 400;'>
+        {conditions_text}
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# State text (context line)
-st.markdown(f"""
-<div style='text-align: center; margin: 0 0 40px 0;'>
-    <div style='font-size: 18px; color: #ccc; line-height: 1.6;'>
-        {state_text}.
+# ANALYST EXPLANATION (Collapsible)
+with st.expander("📊 Analyst Explanation", expanded=False):
+    st.markdown(f"""
+    <div style='font-size: 17px; line-height: 1.9; color: #d0d0d0; font-weight: 400; white-space: pre-line;'>
+        {analyst_view}
     </div>
-</div>
-""", unsafe_allow_html=True)
-
-# Decision Matrix - Grouped Layout
-st.markdown("<div style='margin-top: 50px;'></div>", unsafe_allow_html=True)
-st.markdown("<h3 style='font-size: 28px; margin-bottom: 25px;'>Decision Matrix</h3>", unsafe_allow_html=True)
-
-# Signal icons and data
-val_signal = layers.get('valuation', {}).get('signal', 'N/A')
-val_status = layers.get('valuation', {}).get('status', 'N/A')
-val_icon = "🔴" if val_signal == "Rich" else "🟢" if val_signal == "Cheap" else "⚪"
-
-pressure_signal = layers.get('pressure', {}).get('signal', 'N/A')
-pressure_status = layers.get('pressure', {}).get('status', 'N/A')
-pressure_icon = "🔴" if pressure_signal == "Expanding" else "🟢" if pressure_signal == "Compressing" else "⚪"
-
-tech_signal = layers.get('technical', {}).get('signal', 'N/A')
-tech_status = layers.get('technical', {}).get('status', 'N/A')
-tech_icon = "🟢" if tech_signal == "Bullish" else "🔴" if tech_signal == "Bearish" else "⚪"
-
-pos_signal = layers.get('positioning', {}).get('signal', 'N/A')
-pos_status = layers.get('positioning', {}).get('status', 'N/A')
-pos_icon = "🟠" if "Crowded" in pos_signal else "⚪"
-
-# GROUP 1: Valuation + Pressure (Primary Signals)
-st.markdown("<div style='margin-bottom: 10px; font-size: 16px; color: #888; text-transform: uppercase; letter-spacing: 0.1em;'>Primary Signals</div>", unsafe_allow_html=True)
-
-st.markdown(f"""
-<div style='background-color: #1a1a1a; padding: 18px 24px; border-radius: 10px; margin: 10px 0; border-left: 5px solid #ff6b35;'>
-    <span style='font-size: 18px; font-weight: 600; color: #ccc;'>{val_icon} Valuation:</span>
-    <span style='font-size: 28px; font-weight: 800; color: #ff6b35; margin-left: 15px; text-transform: uppercase;'>{val_signal}</span>
-    <span style='font-size: 14px; color: #777; margin-left: 15px;'>— {val_status}</span>
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown(f"""
-<div style='background-color: #1a1a1a; padding: 18px 24px; border-radius: 10px; margin: 10px 0 25px 0; border-left: 5px solid #ff6b35;'>
-    <span style='font-size: 18px; font-weight: 600; color: #ccc;'>{pressure_icon} Pressure:</span>
-    <span style='font-size: 28px; font-weight: 800; color: #ff6b35; margin-left: 15px; text-transform: uppercase;'>{pressure_signal}</span>
-    <span style='font-size: 14px; color: #777; margin-left: 15px;'>— {pressure_status}</span>
-</div>
-""", unsafe_allow_html=True)
-
-# GROUP 2: Technicals + Positioning (Context Signals)
-st.markdown("<div style='margin-bottom: 10px; font-size: 16px; color: #888; text-transform: uppercase; letter-spacing: 0.1em;'>Context Signals</div>", unsafe_allow_html=True)
-
-st.markdown(f"""
-<div style='background-color: #1a1a1a; padding: 18px 24px; border-radius: 10px; margin: 10px 0; border-left: 5px solid #00ff88;'>
-    <span style='font-size: 18px; font-weight: 600; color: #ccc;'>{tech_icon} Technicals:</span>
-    <span style='font-size: 28px; font-weight: 800; color: #00ff88; margin-left: 15px; text-transform: uppercase;'>{tech_signal}</span>
-    <span style='font-size: 14px; color: #777; margin-left: 15px;'>— {tech_status}</span>
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown(f"""
-<div style='background-color: #1a1a1a; padding: 18px 24px; border-radius: 10px; margin: 10px 0 30px 0; border-left: 5px solid #888;'>
-    <span style='font-size: 18px; font-weight: 600; color: #ccc;'>{pos_icon} Positioning:</span>
-    <span style='font-size: 28px; font-weight: 800; color: #ddd; margin-left: 15px; text-transform: uppercase;'>{pos_signal}</span>
-    <span style='font-size: 14px; color: #777; margin-left: 15px;'>— {pos_status}</span>
-</div>
-""", unsafe_allow_html=True)
-
-# Implication Bar (Taller, Higher Contrast, Verdict-like)
-implication = decision.get('implication', 'N/A')
-st.markdown(f"""
-<div style='background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%); 
-            padding: 25px 30px; border-radius: 12px; margin: 30px 0 40px 0; 
-            border: 3px solid #ff6b35; box-shadow: 0 0 30px rgba(255, 107, 53, 0.5);
-            text-align: center;'>
-    <div style='font-size: 16px; color: #fff; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 10px;'>
-        ⚡ IMPLICATION
-    </div>
-    <div style='font-size: 22px; color: #fff; font-weight: 700; line-height: 1.4;'>
-        {implication}
-    </div>
-</div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
 # =====================================================================
-# SECTION 1: VALUATION & PRESSURE (COLLAPSIBLE)
+# EVIDENCE SECTIONS (ALL COLLAPSED BY DEFAULT)
 # =====================================================================
 st.markdown("<div style='margin-top: 60px;'></div>", unsafe_allow_html=True)
 
-with st.expander("## 1️⃣ Valuation & Pressure", expanded=True):
-    st.markdown('<div class="section-note">Layer 1 (Monthly Macro Fair Value) + Layer 2 (Weekly Pressure Binary)</div>', unsafe_allow_html=True)
+# Extract data for evidence checklist
+val_signal_full = layers.get('valuation', {}).get('signal', 'N/A')
+val_z_score = layers.get('valuation', {}).get('z_score', 0)
+val_z = f"+{val_z_score:.2f}σ" if val_z_score > 0 else f"{val_z_score:.2f}σ"
+
+pressure_signal_full = layers.get('pressure', {}).get('signal', 'N/A')
+pressure_prob = layers.get('pressure', {}).get('prob_expand', 0.5)
+pressure_conf = f"{int((1-pressure_prob)*100)}% conf" if pressure_signal_full == "Compressing" else f"{int(pressure_prob*100)}% conf"
+
+tech_signal_full = layers.get('technical', {}).get('signal', 'N/A')
+tech_status = layers.get('technical', {}).get('status', 'N/A')
+tech_score = tech_status.split('(')[1].split(')')[0] if '(' in tech_status else "N/A"
+
+pos_signal_full = layers.get('positioning', {}).get('signal', 'N/A')
+pos_status = layers.get('positioning', {}).get('status', 'N/A')
+pos_pct = pos_status.split('(')[1].split(')')[0] if '(' in pos_status else "N/A"
+
+with st.expander("## 1️⃣ Valuation & Pressure", expanded=False):
+    # Evidence Checklist at top
+    st.markdown("**Evidence:**")
+    st.markdown(f"""
+    <div style='background-color: #1a1a1a; padding: 16px 24px; border-radius: 8px; margin: 8px 0; border-left: 4px solid #ff6b35;'>
+        <span style='font-size: 16px; font-weight: 500; color: #999;'>Valuation</span>
+        <span style='font-size: 26px; font-weight: 800; color: #ff6b35; margin-left: 20px; text-transform: uppercase;'>{val_signal_full}</span>
+        <span style='font-size: 18px; color: #ccc; margin-left: 20px;'>{val_z}</span>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown(f"""
+    <div style='background-color: #1a1a1a; padding: 16px 24px; border-radius: 8px; margin: 8px 0; border-left: 4px solid #ff6b35;'>
+        <span style='font-size: 16px; font-weight: 500; color: #999;'>Pressure</span>
+        <span style='font-size: 26px; font-weight: 800; color: #ff6b35; margin-left: 20px; text-transform: uppercase;'>{pressure_signal_full}</span>
+        <span style='font-size: 18px; color: #ccc; margin-left: 20px;'>{pressure_conf}</span>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("<div style='margin: 30px 0;'></div>", unsafe_allow_html=True)
+    
+    # Hidden info panel - click to read
+    with st.expander("ⓘ Valuation & Pressure Framework", expanded=False):
+        st.markdown("""
+        Valuation is produced by a macro fair-value model trained on relative growth, rates, inflation, credit, volatility, and liquidity conditions across the US and Euro Area. Multiple model classes were tested — including Ridge, Lasso, ElasticNet, and tree-based methods — across different feature sets and stability regimes.
+        
+        The final valuation model uses ElasticNet regression, selected deliberately for its ability to balance signal extraction and stability in a high-collinearity macro environment. ElasticNet delivered the most economically coherent coefficients and consistent out-of-sample behavior versus over-sparse linear models and over-fit tree-based alternatives.
+        
+        Pressure is modeled separately. A weekly LightGBM classifier estimates whether valuation gaps are more likely to expand or compress, using market-based inputs only. This layer does not forecast spot FX levels — it forecasts directional pressure on mispricing.
+        
+        The separation is intentional. Valuation defines where price is relative to macro fundamentals. Pressure defines how markets typically behave around that valuation. Timing and trade construction are completed using technicals and positioning.
+        """)
+    
+    st.markdown("<div style='margin: 20px 0;'></div>", unsafe_allow_html=True)
     
     # 2x2 GRID FOR QUICK SCANNING
     # ROW 1
@@ -485,9 +497,20 @@ with st.expander("## 1️⃣ Valuation & Pressure", expanded=True):
 # =====================================================================
 # SECTION 2: TECHNICALS (COLLAPSIBLE)
 # =====================================================================
-st.markdown("<div style='margin-top: 60px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='margin-top: 40px;'></div>", unsafe_allow_html=True)
 
 with st.expander("## 2️⃣ Technicals", expanded=False):
+    # Evidence Checklist
+    st.markdown("**Evidence:**")
+    st.markdown(f"""
+    <div style='background-color: #1a1a1a; padding: 16px 24px; border-radius: 8px; margin: 8px 0; border-left: 4px solid #00ff88;'>
+        <span style='font-size: 16px; font-weight: 500; color: #999;'>Technicals</span>
+        <span style='font-size: 26px; font-weight: 800; color: #00ff88; margin-left: 20px; text-transform: uppercase;'>{tech_signal_full}</span>
+        <span style='font-size: 18px; color: #ccc; margin-left: 20px;'>{tech_score}</span>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("<div style='margin: 25px 0;'></div>", unsafe_allow_html=True)
     st.markdown('<div class="section-note">Technicals provide execution context, not valuation.</div>', unsafe_allow_html=True)
     
     if tech_data is None:
@@ -528,9 +551,20 @@ with st.expander("## 2️⃣ Technicals", expanded=False):
 # =====================================================================
 # SECTION 3: POSITIONING (COLLAPSIBLE)
 # =====================================================================
-st.markdown("<div style='margin-top: 60px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='margin-top: 40px;'></div>", unsafe_allow_html=True)
 
 with st.expander("## 3️⃣ Positioning", expanded=False):
+    # Evidence Checklist
+    st.markdown("**Evidence:**")
+    st.markdown(f"""
+    <div style='background-color: #1a1a1a; padding: 16px 24px; border-radius: 8px; margin: 8px 0; border-left: 4px solid #888;'>
+        <span style='font-size: 16px; font-weight: 500; color: #999;'>Positioning</span>
+        <span style='font-size: 26px; font-weight: 800; color: #ddd; margin-left: 20px; text-transform: uppercase;'>{pos_signal_full}</span>
+        <span style='font-size: 18px; color: #ccc; margin-left: 20px;'>{pos_pct}</span>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("<div style='margin: 25px 0;'></div>", unsafe_allow_html=True)
     st.markdown('<div class="section-note">Positioning highlights asymmetry and tail risk.</div>', unsafe_allow_html=True)
     
     if pos_data is None:
@@ -589,3 +623,40 @@ st.markdown("""
     <i>Framework suggests / balance of risks — NOT predictions</i>
 </div>
 """, unsafe_allow_html=True)
+
+# =====================================================================
+# DECISION MATRIX (TRACEABILITY TABLE - COLLAPSED BY DEFAULT)
+# =====================================================================
+st.markdown("<div style='margin-top: 40px;'></div>", unsafe_allow_html=True)
+
+with st.expander("## 🔍 Decision Matrix", expanded=False):
+    st.markdown('<div class="section-note">Traceability table — shows how the final view was formed from all 4 layers.</div>', unsafe_allow_html=True)
+    
+    st.markdown("<div style='margin: 25px 0;'></div>", unsafe_allow_html=True)
+    
+    # All 4 layers in one place for audit
+    st.markdown(f"""
+    <div style='background-color: #1a1a1a; padding: 16px 24px; border-radius: 8px; margin: 8px 0; border-left: 4px solid #ff6b35;'>
+        <span style='font-size: 16px; font-weight: 500; color: #999;'>Valuation</span>
+        <span style='font-size: 26px; font-weight: 800; color: #ff6b35; margin-left: 20px; text-transform: uppercase;'>{val_signal_full}</span>
+        <span style='font-size: 18px; color: #ccc; margin-left: 20px;'>{val_z}</span>
+    </div>
+    
+    <div style='background-color: #1a1a1a; padding: 16px 24px; border-radius: 8px; margin: 8px 0; border-left: 4px solid #ff6b35;'>
+        <span style='font-size: 16px; font-weight: 500; color: #999;'>Pressure</span>
+        <span style='font-size: 26px; font-weight: 800; color: #ff6b35; margin-left: 20px; text-transform: uppercase;'>{pressure_signal_full}</span>
+        <span style='font-size: 18px; color: #ccc; margin-left: 20px;'>{pressure_conf}</span>
+    </div>
+    
+    <div style='background-color: #1a1a1a; padding: 16px 24px; border-radius: 8px; margin: 8px 0; border-left: 4px solid #00ff88;'>
+        <span style='font-size: 16px; font-weight: 500; color: #999;'>Technicals</span>
+        <span style='font-size: 26px; font-weight: 800; color: #00ff88; margin-left: 20px; text-transform: uppercase;'>{tech_signal_full}</span>
+        <span style='font-size: 18px; color: #ccc; margin-left: 20px;'>{tech_score}</span>
+    </div>
+    
+    <div style='background-color: #1a1a1a; padding: 16px 24px; border-radius: 8px; margin: 8px 0; border-left: 4px solid #888;'>
+        <span style='font-size: 16px; font-weight: 500; color: #999;'>Positioning</span>
+        <span style='font-size: 26px; font-weight: 800; color: #ddd; margin-left: 20px; text-transform: uppercase;'>{pos_signal_full}</span>
+        <span style='font-size: 18px; color: #ccc; margin-left: 20px;'>{pos_pct}</span>
+    </div>
+    """, unsafe_allow_html=True)

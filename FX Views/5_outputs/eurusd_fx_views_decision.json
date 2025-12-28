@@ -1,7 +1,10 @@
 {
   "pair": "EURUSD",
-  "regime_label": "Rich + Compressing Pressure",
-  "nikhil_view": "EURUSD is rich versus macro fair value, and pressure is starting to fade. Bias: fade rallies, don't chase breakouts. This view breaks if compression fails and upside momentum re-accelerates. Pressure confidence is low \u2014 treat this as a tactical bias, not conviction.",
+  "cfo_headline": "Fade EURUSD rallies. Don't chase upside.",
+  "cfo_view": "ACTION|||Fade EURUSD rallies. Don't chase upside.\nCONDITIONS|||Not a conviction short. View breaks if upside pressure re-accelerates.",
+  "analyst_view": "\u2022 Valuation: Stretched rich (+2.5\u03c3 vs macro fair value); snapback risk is elevated.\n\u2022 Pressure: Weekly signals show compressing (56% probability); forces working to close the gap.\n\u2022 Technicals: Trend is constructive; no signs of reversal yet.\n\u2022 Positioning: Neutral; no material asymmetry.\n\nSo what:\nThe setup supports fading rallies, but technicals and positioning haven't confirmed yet\u2014so keep it tactical, not conviction.",
+  "nikhil_view": "ACTION|||Fade EURUSD rallies. Don't chase upside.\nCONDITIONS|||Not a conviction short. View breaks if upside pressure re-accelerates.",
+  "regime_label": "Fade EURUSD rallies. Don't chase upside.",
   "layers": {
     "valuation": {
       "signal": "Rich",
@@ -29,5 +32,5 @@
     }
   },
   "implication": "Overvaluation fading \u2192 fade rallies, but trend is supportive",
-  "generated_at": "2025-12-26 20:14:31"
+  "generated_at": "2025-12-28 10:33:48"
 }

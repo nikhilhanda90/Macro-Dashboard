@@ -169,10 +169,23 @@ class CycleAnalyzerV2:
         
         # For inflation indicators using yoy, display the YoY change
         if trend_method == 'yoy' and 'inflation' in type_tag:
-            if len(df_sorted) < 13:
+            # Determine YoY periods based on frequency
+            frequency = ind_config.get('frequency', 'monthly').lower()
+            if frequency == 'quarterly':
+                yoy_periods = 4  # 4 quarters = 1 year
+                min_length = 5
+            elif frequency == 'monthly':
+                yoy_periods = 12  # 12 months = 1 year
+                min_length = 13
+            else:
+                # For daily/weekly
+                yoy_periods = 252 if frequency == 'daily' else 52
+                min_length = yoy_periods + 1
+            
+            if len(df_sorted) < min_length:
                 return None, None, None
             
-            df_sorted['yoy_change'] = df_sorted['value'].pct_change(periods=12) * 100
+            df_sorted['yoy_change'] = df_sorted['value'].pct_change(periods=yoy_periods) * 100
             df_analysis = df_sorted.dropna(subset=['yoy_change']).copy()
             
             if df_analysis.empty:
@@ -191,10 +204,23 @@ class CycleAnalyzerV2:
         
         # For other yoy indicators (like Retail Sales, PCE)
         elif trend_method == 'yoy':
-            if len(df_sorted) < 13:
+            # Determine YoY periods based on frequency
+            frequency = ind_config.get('frequency', 'monthly').lower()
+            if frequency == 'quarterly':
+                yoy_periods = 4  # 4 quarters = 1 year
+                min_length = 5
+            elif frequency == 'monthly':
+                yoy_periods = 12  # 12 months = 1 year
+                min_length = 13
+            else:
+                # For daily/weekly, use approximation (252 trading days or 52 weeks)
+                yoy_periods = 252 if frequency == 'daily' else 52
+                min_length = yoy_periods + 1
+            
+            if len(df_sorted) < min_length:
                 return None, None, None
             
-            df_sorted['yoy_change'] = df_sorted['value'].pct_change(periods=12) * 100
+            df_sorted['yoy_change'] = df_sorted['value'].pct_change(periods=yoy_periods) * 100
             df_analysis = df_sorted.dropna(subset=['yoy_change']).copy()
             
             if df_analysis.empty:
@@ -352,7 +378,7 @@ class CycleAnalyzerV2:
             'cluster': ind_config.get('cluster', None),  # NEW: Cluster assignment
             'type_tag': type_tag_val,
             'unit': unit,
-            'data': df,  # Keep original data for charting
+            'data': df_for_analysis,  # Use transformed data for charting (YoY, MoM, etc.)
             'inverted': ind_config.get('inverted', False),
             'narrative': narrative,  # Detailed narrative for hover
             'fun_line': fun_line,  # NEW: Catchy one-liner

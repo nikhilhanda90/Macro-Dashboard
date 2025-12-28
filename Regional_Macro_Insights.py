@@ -21,7 +21,7 @@ except ImportError:
     COUNTRY_ANALYSIS_AVAILABLE = False
 
 st.set_page_config(
-    page_title="Macro View",
+    page_title="Macro Insights — Nikhil Dashboard",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -181,6 +181,50 @@ st.markdown("""
     
     [data-testid="stSidebar"] .stMarkdown {
         color: #ffffff !important;
+    }
+    
+    /* === Page Navigation Links (More Pronounced) === */
+    [data-testid="stSidebarNav"] {
+        background-color: #1a1a1a;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    
+    [data-testid="stSidebarNav"] ul {
+        padding: 0 !important;
+    }
+    
+    [data-testid="stSidebarNav"] li {
+        margin: 8px 0 !important;
+    }
+    
+    [data-testid="stSidebarNav"] a {
+        background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%) !important;
+        border: 2px solid #00ff80 !important;
+        border-radius: 8px !important;
+        padding: 12px 16px !important;
+        color: #00ff80 !important;
+        font-weight: 600 !important;
+        font-size: 16px !important;
+        text-decoration: none !important;
+        display: block !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 0 15px rgba(0, 255, 128, 0.2) !important;
+    }
+    
+    [data-testid="stSidebarNav"] a:hover {
+        background: linear-gradient(135deg, #0a3d2e 0%, #0a0a0a 100%) !important;
+        border-color: #00ff80 !important;
+        box-shadow: 0 0 25px rgba(0, 255, 128, 0.4) !important;
+        transform: translateX(4px) !important;
+    }
+    
+    [data-testid="stSidebarNav"] li[aria-current="page"] a {
+        background: linear-gradient(135deg, #00ff80 0%, #00cc66 100%) !important;
+        color: #000000 !important;
+        font-weight: 800 !important;
+        box-shadow: 0 0 30px rgba(0, 255, 128, 0.6) !important;
     }
     
     /* === Input Elements === */
@@ -894,7 +938,8 @@ def create_collapsible_indicators(analysis_results, indicator_type, region, expl
             st.markdown("---")
 
 def main():
-    st.title("🌍 Macro View")
+    st.markdown('<h1 style="font-size: 3rem; font-weight: 700;">🌍 Macro Insights</h1>', unsafe_allow_html=True)
+    st.markdown("---")
     
     # Show loading status
     status_placeholder = st.empty()
@@ -953,7 +998,74 @@ def main():
         st.code(traceback.format_exc())
         st.stop()
     
-    # Show stale indicators warning if any
+    # Initialize session state for region selection
+    if 'selected_region' not in st.session_state:
+        st.session_state.selected_region = 'US'
+    
+    selected_region = st.session_state.selected_region
+    
+    # === 1. FOCUS REGION SELECTOR (TOP OF PAGE) ===
+    st.markdown("### Focus Region")
+    col1, col2 = st.columns([1, 1])
+    
+    with col1:
+        if st.button("🇺🇸 United States", use_container_width=True, type="primary" if selected_region == "US" else "secondary"):
+            st.session_state.selected_region = 'US'
+            st.rerun()
+    with col2:
+        if st.button("🇪🇺 Eurozone", use_container_width=True, type="primary" if selected_region == "Eurozone" else "secondary"):
+            st.session_state.selected_region = 'Eurozone'
+            st.rerun()
+    
+    st.markdown("<div style='margin: 40px 0;'></div>", unsafe_allow_html=True)
+    
+    # Generate commentary for current region
+    commentary_engine = CommentaryEngine()
+    
+    if selected_region == "US":
+        nikhil_take = commentary_engine.generate_us_commentary(analysis_results)
+        region_display = "US"
+        flag = "🇺🇸"
+    elif selected_region == "Eurozone":
+        nikhil_take = commentary_engine.generate_eurozone_commentary(analysis_results)
+        region_display = "Eurozone"
+        flag = "🇪🇺"
+    else:
+        nikhil_take = None
+        region_display = selected_region
+        flag = "🌍"
+    
+    # === 2. NIKHIL'S MACRO VIEW ===
+    if nikhil_take:
+        st.markdown(f"""
+        <div style='margin: 30px 0 20px 0;'>
+            <div style='font-size: 48px; font-weight: 900; letter-spacing: 0.05em; color: #00ff80; line-height: 1.2;'>
+                {flag} {region_display}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown(f"""
+        <div style='background-color: #1a1a1a; padding: 25px 30px; border-radius: 10px; border-left: 5px solid #00ff80; margin: 0 0 35px 0;'>
+            <div style='font-size: 19px; line-height: 1.7; color: #e8e8e8; font-weight: 400;'>
+                {nikhil_take}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # === 3. MACRO WATCHLIST ===
+    st.markdown("""
+    <div style='background-color: #2a2a2a; padding: 20px 25px; border-radius: 10px; margin: 0 0 50px 0; border: 1px solid #444;'>
+        <div style='font-size: 16px; color: #00ff80; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;'>
+            📍 Macro Watchlist
+        </div>
+        <div style='font-size: 17px; color: #ccc; line-height: 1.6;'>
+            Key variables to monitor: Leading indicator momentum, credit spreads, labor market resilience, policy stance shifts.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Show stale indicators warning if any (collapsed)
     if stale_indicators:
         with st.expander(f"⚠️ {len(stale_indicators)} indicators excluded (stale/unavailable data)"):
             st.caption("These indicators have data older than the frequency-based freshness threshold or are unavailable:")
@@ -963,81 +1075,17 @@ def main():
                     st.caption(f"• {name} → Last: {last_date}")
                 else:
                     st.caption(f"• {item}")
+        st.markdown("<div style='margin: 20px 0;'></div>", unsafe_allow_html=True)
     
-    # Region selector
-    st.markdown("### Select Region")
-    col1, col2 = st.columns([1, 1])
-    
-    with col1:
-        if st.button("🇺🇸 United States", use_container_width=True):
-            st.session_state.selected_region = 'US'
-    with col2:
-        if st.button("🇪🇺 Eurozone", use_container_width=True):
-            st.session_state.selected_region = 'Eurozone'
-    
-    # Initialize session state
-    if 'selected_region' not in st.session_state:
-        st.session_state.selected_region = 'US'
-    
-    selected_region = st.session_state.selected_region
-    
-    st.markdown(f"**Current View:** {selected_region}")
-    st.markdown("---")
-    
-    # MACRO RELATIVE VIEW (US vs Eurozone comparison for FX context)
-    create_macro_relative_view(analysis_results)
-    
-    st.markdown("---")
-    
-    # SINGLE REGION MODE
-    flag_map = {
-        "US": "🇺🇸",
-        "Eurozone": "🇪🇺"
-    }
-    flag = flag_map.get(selected_region, "🌍")
-    st.markdown(f"## {flag} {selected_region}")
-    
-    # Nikhil's Take - High-level commentary
-    commentary_engine = CommentaryEngine()
-    
-    if selected_region == "US":
-        nikhil_take = commentary_engine.generate_us_commentary(analysis_results)
-        title = "🧠 Nikhil's Take — US Macro View"
-    elif selected_region == "Eurozone":
-        nikhil_take = commentary_engine.generate_eurozone_commentary(analysis_results)
-        title = "🧠 Nikhil's Take — Eurozone Macro View"
-    else:
-        nikhil_take = None
-        title = ""
-    
-    # LAYER 1: NARRATIVE (Always visible, dominant)
-    if nikhil_take:
-        st.markdown(f"""
-        <div style='background: linear-gradient(135deg, #0a3d2e 0%, #0a0a0a 100%); 
-                    padding: 2.5rem; 
-                    border-radius: 16px; 
-                    border: 3px solid #00ff80;
-                    margin-bottom: 2rem;
-                    box-shadow: 0 0 30px rgba(0,255,128,0.3);'>
-            <div style='color: #00ff80; font-weight: 700; font-size: 1.5rem; margin-bottom: 1.2rem; text-transform: uppercase; letter-spacing: 0.05em;'>
-                {title}
-            </div>
-            <div style='color: #ffffff; font-size: 1.15rem; line-height: 1.8; font-weight: 400;'>
-                {nikhil_take}
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # LAYER 2: MACRO STATE SUMMARY (Scan layer)
+    # === 4. MACRO STATE (ALWAYS VISIBLE) ===
+    st.markdown(f"## 📊 Macro State — {region_display}")
     create_macro_state_summary(analysis_results, selected_region)
     
     st.markdown("---")
     
-    # LAYER 3: INDICATOR EXPLORER (Optional, interactive)
-    # Get explore mode from session state
+    # === 5. INDICATORS (ALWAYS VISIBLE) ===
     explore_mode = st.session_state.get('explore_mode', False)
     
-    st.markdown("### 🔍 Indicator Explorer")
     if not explore_mode:
         st.caption("💡 Enable 'Explore Mode' in sidebar to auto-expand all indicators")
     

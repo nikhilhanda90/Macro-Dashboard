@@ -32,7 +32,7 @@ Live dashboard for macro cycle tracking and FX decision-making.
 pip install -r requirements.txt
 
 # Run dashboard
-streamlit run dashboard_regional.py
+streamlit run Regional_Macro_Insights.py
 ```
 
 Dashboard opens at: **http://localhost:8501**
@@ -97,7 +97,7 @@ py generate_fx_views_complete.py
 
 ```
 Macro-Dashboard/
-├── dashboard_regional.py          # Main Streamlit app
+├── Regional_Macro_Insights.py     # Main Streamlit app
 ├── pages/
 │   └── 1_💱_FX_Insights.py       # FX Views page
 ├── FX Views/

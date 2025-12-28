@@ -171,9 +171,13 @@ INDICATORS = {
         'frequency': 'daily',
         'description': 'Risk appetite indicator (YoY change) — NOT real growth',
         'indicator_type': 'Contextual',  # Removed from Leading scoring
+        'use_yoy': True,  # YoY % change, not level
+        'use_mom': False,
+        'trend_method': 'yoy',
+        'type_tag': 'growth_activity',
+        'inverted': False,
         'region': 'US',
         'source': 'fred',
-        'use_yoy': True,  # YoY % change, not level
         'contextual': True,  # Exclude from Leading score
         'interpretation_notes': 'Strong equities + weak growth = late-cycle or liquidity-driven rally'
     },
@@ -183,9 +187,13 @@ INDICATORS = {
         'frequency': 'daily',
         'description': 'Tech risk appetite (YoY change) — NOT real growth',
         'indicator_type': 'Contextual',  # Removed from Leading scoring
+        'use_yoy': True,  # YoY % change, not level
+        'use_mom': False,
+        'trend_method': 'yoy',
+        'type_tag': 'growth_activity',
+        'inverted': False,
         'region': 'US',
         'source': 'fred',
-        'use_yoy': True,  # YoY % change, not level
         'contextual': True,  # Exclude from Leading score
         'interpretation_notes': 'Strong equities + weak growth = late-cycle or liquidity-driven rally'
     },
@@ -203,7 +211,7 @@ INDICATORS = {
         'name': 'Nonfarm Payrolls',
         'category': 'Labor',
         'frequency': 'monthly',
-        'description': 'Monthly job additions (thousands)',
+        'description': 'Labor is the last pillar to turn. Once jobs weaken meaningfully, consumption and confidence follow with a lag.',
         'indicator_type': 'Coincident',
         'use_monthly_change': True,
         'region': 'US'
@@ -212,7 +220,7 @@ INDICATORS = {
         'name': 'Industrial Production',
         'category': 'Growth',
         'frequency': 'monthly',
-        'description': 'Industrial production index',
+        'description': 'Manufacturing reflects real demand and margin pressure. It usually lags consumption but leads employment and capex decisions.',
         'indicator_type': 'Coincident',
         'region': 'US'
     },
@@ -220,26 +228,35 @@ INDICATORS = {
         'name': 'Retail Sales',
         'category': 'Growth',
         'frequency': 'monthly',
-        'description': 'Advance retail sales',
+        'description': 'Retail shows behavior, not confidence. Nominal strength can mask volume weakness when inflation is high.',
         'indicator_type': 'Coincident',
         'use_yoy': True,
-        'region': 'US'
+        'use_mom': False,
+        'trend_method': 'yoy',
+        'type_tag': 'growth_activity',
+        'inverted': False,
+        'region': 'US',
+        'source': 'fred'
     },
     'PCECC96': {
         'name': 'Real Personal Consumption',
         'category': 'Growth',
         'frequency': 'quarterly',
-        'description': 'Real PCE in billions of chained 2017 USD (SAAR)',
+        'description': 'Consumption drives US growth. Stability here delays recession, but does not guarantee expansion without income growth.',
         'indicator_type': 'Coincident',
         'use_yoy': True,
         'use_mom': False,
-        'region': 'US'
+        'trend_method': 'yoy',
+        'type_tag': 'growth_activity',
+        'inverted': False,
+        'region': 'US',
+        'source': 'fred'
     },
     'A191RL1Q225SBEA': {
         'name': 'Real GDP',
         'category': 'Growth',
         'frequency': 'quarterly',
-        'description': 'Real GDP growth rate (QoQ, Seasonally Adjusted Annual Rate)',
+        'description': 'GDP validates the cycle after it has already moved. Direction and revisions matter more than a single strong print.',
         'indicator_type': 'Coincident',
         'use_yoy': False,
         'use_mom': False,
@@ -249,7 +266,7 @@ INDICATORS = {
         'name': 'Federal Funds Rate',
         'category': 'Fixed Income',
         'frequency': 'daily',
-        'description': 'Effective federal funds rate',
+        'description': 'Policy works through expectations before it works through action. Markets react to the direction of rates long before the level actually changes.',
         'indicator_type': 'Coincident',
         'region': 'US'
     },
@@ -257,7 +274,7 @@ INDICATORS = {
         'name': 'SOFR',
         'category': 'Fixed Income',
         'frequency': 'daily',
-        'description': 'Secured Overnight Financing Rate',
+        'description': 'Short-term funding rates reveal stress in the plumbing. Stability is necessary for risk-taking, but not sufficient.',
         'indicator_type': 'Coincident',
         'backfill_series': 'DFF',
         'region': 'US'
@@ -266,7 +283,7 @@ INDICATORS = {
         'name': '30Y Mortgage Rate',
         'category': 'Housing',
         'frequency': 'weekly',
-        'description': '30-year fixed rate mortgage average',
+        'description': 'Housing is the most rate-sensitive part of the economy. Sustained moves in mortgage rates change behavior, not sentiment. Short-term dips do not fix affordability; persistence does.',
         'indicator_type': 'Coincident',
         'region': 'US'
     },
@@ -274,7 +291,7 @@ INDICATORS = {
         'name': 'Reverse Repo',
         'category': 'Fixed Income',
         'frequency': 'daily',
-        'description': 'Overnight reverse repurchase agreements',
+        'description': 'RRP reflects excess liquidity. Falling balances usually support risk until the buffer is exhausted.',
         'indicator_type': 'Coincident',
         'region': 'US'
     },
@@ -282,7 +299,7 @@ INDICATORS = {
         'name': 'Dollar Index',
         'category': 'Fixed Income',
         'frequency': 'daily',
-        'description': 'Trade Weighted US Dollar Index',
+        'description': 'The dollar is a global tightening or easing valve. A strong dollar tightens financial conditions outside the US, even when domestic data looks fine.',
         'indicator_type': 'Coincident',
         'region': 'US'
     },
@@ -302,7 +319,13 @@ INDICATORS = {
         'frequency': 'monthly',
         'description': 'Consumer Price Index - All Urban Consumers',
         'indicator_type': 'Lagging',
-        'region': 'US'
+        'use_yoy': True,
+        'use_mom': False,
+        'trend_method': 'yoy',
+        'type_tag': 'inflation_rate',
+        'inverted': False,
+        'region': 'US',
+        'source': 'fred'
     },
     'CPILFESL': {
         'name': 'Core CPI',
@@ -310,7 +333,13 @@ INDICATORS = {
         'frequency': 'monthly',
         'description': 'CPI excluding food and energy',
         'indicator_type': 'Lagging',
-        'region': 'US'
+        'use_yoy': True,
+        'use_mom': False,
+        'trend_method': 'yoy',
+        'type_tag': 'inflation_rate',
+        'inverted': False,
+        'region': 'US',
+        'source': 'fred'
     },
     'PCEPI': {
         'name': 'PCE Price Index',
@@ -318,7 +347,13 @@ INDICATORS = {
         'frequency': 'monthly',
         'description': 'Personal consumption expenditures price index',
         'indicator_type': 'Lagging',
-        'region': 'US'
+        'use_yoy': True,
+        'use_mom': False,
+        'trend_method': 'yoy',
+        'type_tag': 'inflation_rate',
+        'inverted': False,
+        'region': 'US',
+        'source': 'fred'
     },
     'PCEPILFE': {
         'name': 'Core PCE',
@@ -326,7 +361,13 @@ INDICATORS = {
         'frequency': 'monthly',
         'description': 'PCE excluding food and energy (Fed preferred measure)',
         'indicator_type': 'Lagging',
-        'region': 'US'
+        'use_yoy': True,
+        'use_mom': False,
+        'trend_method': 'yoy',
+        'type_tag': 'inflation_rate',
+        'inverted': False,
+        'region': 'US',
+        'source': 'fred'
     },
     'ECIWAG': {
         'name': 'Employment Cost Index',
@@ -336,7 +377,11 @@ INDICATORS = {
         'indicator_type': 'Lagging',
         'use_yoy': True,
         'use_mom': False,
-        'region': 'US'
+        'trend_method': 'yoy',  # Required for TrendEngine
+        'type_tag': 'wages_costs',  # Required for TrendEngine
+        'inverted': False,
+        'region': 'US',
+        'source': 'fred'
     },
     # 'TEDRATE': {
     #     'name': 'TED Spread',
@@ -449,6 +494,11 @@ INDICATORS = {
         'frequency': 'monthly',
         'description': "The Eurozone's mood ring — business and consumer confidence in one number.",
         'indicator_type': 'Leading',
+        'use_yoy': False,
+        'use_mom': False,
+        'trend_method': 'level',  # Required for TrendEngine
+        'type_tag': 'sentiment',  # Required for TrendEngine
+        'inverted': False,
         'region': 'Eurozone',
         'source': 'csv',
         'csv_file': 'eurozone_data/eurostat_industrial_confidence_ea20.csv',
@@ -460,6 +510,11 @@ INDICATORS = {
         'frequency': 'monthly',
         'description': 'The household gut check — whether consumers are bracing or spending.',
         'indicator_type': 'Leading',
+        'use_yoy': False,
+        'use_mom': False,
+        'trend_method': 'level',  # Required for TrendEngine
+        'type_tag': 'sentiment',  # Required for TrendEngine
+        'inverted': False,
         'region': 'Eurozone',
         'source': 'csv',
         'csv_file': 'eurozone_data/eurostat_industrial_confidence_ea20.csv',
@@ -477,11 +532,14 @@ INDICATORS = {
         'description': 'Euro Area harmonized unemployment rate (Eurostat)',
         'indicator_type': 'Coincident',
         'inverted': True,
+        'use_yoy': False,
+        'use_mom': False,
+        'trend_method': 'level',  # Required for TrendEngine
+        'type_tag': 'labor_slack',  # Required for TrendEngine
         'region': 'Eurozone',
         'source': 'csv',
         'csv_file': 'eurozone_data/eurostat_unemployment_ea20.csv',
-        'eurostat_filters': {'s_adj': 'SA', 'age': 'TOTAL', 'sex': 'T', 'unit': 'PC_ACT'},
-        'use_yoy': False
+        'eurostat_filters': {'s_adj': 'SA', 'age': 'TOTAL', 'sex': 'T', 'unit': 'PC_ACT'}
     },
     # Growth - Use Germany (more reliable data)
     # 'DEUPRO': {
@@ -501,11 +559,14 @@ INDICATORS = {
         'frequency': 'monthly',
         'description': 'Euro Area retail trade volume index',
         'indicator_type': 'Coincident',
+        'use_yoy': True,  # Index - use YoY
+        'use_mom': False,
+        'trend_method': 'yoy',  # Required for TrendEngine
+        'type_tag': 'growth_activity',  # Required for TrendEngine
+        'inverted': False,
         'region': 'Eurozone',
         'source': 'csv',
-        'csv_file': 'eurozone_data/eurostat_retail_ea20.csv',
-        'use_yoy': True,  # Index - use YoY
-        'use_mom': False
+        'csv_file': 'eurozone_data/eurostat_retail_ea20.csv'
     },
     'CLVMNACSCAB1GQEA19': {
         'name': 'Euro Area Real GDP',
@@ -515,6 +576,9 @@ INDICATORS = {
         'indicator_type': 'Coincident',
         'use_yoy': True,  # Level series - compute YoY %
         'use_mom': False,
+        'trend_method': 'yoy',  # Required for TrendEngine
+        'type_tag': 'growth_activity',  # Required for TrendEngine
+        'inverted': False,
         'region': 'Eurozone',
         'source': 'fred'
     },
@@ -540,22 +604,28 @@ INDICATORS = {
         'description': 'Harmonized Index of Consumer Prices - All Items',
         'indicator_type': 'Lagging',
         'use_yoy': True,  # Show as YoY % inflation, not index level
+        'use_mom': False,
+        'trend_method': 'yoy',  # Required for TrendEngine
+        'type_tag': 'inflation_rate',  # Required for TrendEngine
+        'inverted': False,
         'region': 'Eurozone',
         'source': 'fred'
     },
     # Wages - EUROSTAT DIRECT (Index - compute YoY)
-    'EA_WAGE_GROWTH': {
-        'name': 'Labor Cost Index (EUR)',
-        'category': 'Labor',
-        'frequency': 'quarterly',
-        'description': 'Euro Area labor cost index - hourly costs (Eurostat)',
-        'indicator_type': 'Lagging',
-        'region': 'Eurozone',
-        'source': 'csv',
-        'csv_file': 'eurozone_data/eurostat_ulc_ea20.csv',
-        'use_yoy': True,  # Index - use YoY for percentile/trend
-        'use_mom': False
-    },
+    # REMOVED: EA_WAGE_GROWTH / Labor Cost Index (redundant, low utility)
+    # 'EA_WAGE_GROWTH': {
+    #     'name': 'Labor Cost Index (EUR)',
+    #     'category': 'Labor',
+    #     'frequency': 'quarterly',
+    #     'description': 'Euro Area labor cost index - hourly costs (Eurostat)',
+    #     'indicator_type': 'Lagging',
+    #     'region': 'Eurozone',
+    #     'source': 'csv',
+    #     'csv_file': 'eurozone_data/eurostat_ulc_ea20.csv',
+    #     'use_yoy': True,  # Index - use YoY for percentile/trend
+    #     'use_mom': False
+    # },
+    
     # Policy Rate
     'ECBDFR': {
         'name': 'ECB Deposit Rate',

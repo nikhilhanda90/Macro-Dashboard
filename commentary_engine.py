@@ -406,7 +406,7 @@ class CommentaryEngine:
             signal_desc = "leading signals are mixed, with pockets of strength but no clear acceleration"
             growth_bridge = f"{growth_labor_text.capitalize()}"
             implication = f" {inflation_text.capitalize()}."
-            watch = " Watch the leading bucket closely: any directional move here matters for the EUR growth outlook."
+            watch = " Watch the leading bucket closely: any directional move here matters for the growth outlook."
             
         elif "mid-cycle" in stage.lower() and "flat" in momentum.lower():
             opening = "Eurozone macro is stuck in neutral — nothing breaking down, nothing accelerating either. "

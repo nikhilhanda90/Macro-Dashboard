@@ -12,7 +12,7 @@
 - [ ] Sign in with GitHub
 - [ ] Click "New app"
 - [ ] Select your repo
-- [ ] Main file: `dashboard_regional.py`
+- [ ] Main file: `Regional_Macro_Insights.py`
 - [ ] Click "Advanced settings"
 
 ### 3. Add Secrets (CRITICAL!)
@@ -25,7 +25,7 @@ FRED_API_KEY = "your_actual_fred_api_key_here"
 ### 4. Deploy!
 - [ ] Click "Deploy"
 - [ ] Wait 2-3 minutes
-- [ ] Your dashboard will be live at: `https://share.streamlit.io/[username]/[repo]/dashboard_regional.py`
+- [ ] Your dashboard will be live at: `https://share.streamlit.io/[username]/[repo]/Regional_Macro_Insights.py`
 
 ---
 
