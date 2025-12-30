@@ -992,6 +992,18 @@ def create_collapsible_indicators(analysis_results, indicator_type, region, expl
             st.markdown("---")
 
 def main():
+    # === GLOBAL HEADER (Market Lens Branding) ===
+    st.markdown("""
+    <div style='background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%); padding: 15px 30px; margin: -60px -60px 30px -60px; border-bottom: 2px solid #00ff80; box-shadow: 0 4px 15px rgba(0, 255, 128, 0.2);'>
+        <div style='font-size: 28px; font-weight: 800; letter-spacing: 0.1em; color: #00ff80; text-align: center;'>
+            MARKET LENS
+        </div>
+        <div style='font-size: 13px; color: #999; text-align: center; margin-top: 5px; letter-spacing: 0.15em;'>
+            MACRO & FX INTELLIGENCE
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
     st.markdown("""
     <div style='text-align: center; margin: 40px 0 50px 0;'>
         <div style='font-size: 80px; margin-bottom: 10px;'>🌍</div>
