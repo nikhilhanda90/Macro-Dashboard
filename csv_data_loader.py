@@ -47,8 +47,8 @@ class CSVDataLoader:
             'EA_COMPENSATION': 'ecb_compensation_ea.csv',
             'EA_HICP_HEADLINE': 'eurostat_hicp_headline_ea20.csv',
             'EA_INDUSTRIAL_CONF': 'eurostat_industrial_confidence_ea20.csv',
-            'EUROSTAT_ESI_EA': 'eurostat_industrial_confidence_ea20.csv',
-            'EUROSTAT_CCI_EA': 'eurostat_industrial_confidence_ea20.csv',
+            'EUROSTAT_ESI_EA': 'eurostat_esi_ea20.csv',  # Fixed: Now points to correct file
+            'EUROSTAT_CCI_EA': 'eurostat_cci_ea20.csv',  # Fixed: Now points to correct file
             'EA_YIELD_CURVE': 'ecb_yield_curve_full.csv',
         }
     

@@ -501,7 +501,7 @@ INDICATORS = {
         'inverted': False,
         'region': 'Eurozone',
         'source': 'csv',
-        'csv_file': 'eurozone_data/eurostat_industrial_confidence_ea20.csv',
+        'csv_file': 'eurozone_data/eurostat_esi_ea20.csv',  # Fixed: Now points to correct file
         'interpretation_notes': 'Downtrends precede investment slowdowns. Stabilization after declines often marks late-cycle pauses, not recoveries.'
     },
     'EUROSTAT_CCI_EA': {
@@ -517,7 +517,7 @@ INDICATORS = {
         'inverted': False,
         'region': 'Eurozone',
         'source': 'csv',
-        'csv_file': 'eurozone_data/eurostat_industrial_confidence_ea20.csv',
+        'csv_file': 'eurozone_data/eurostat_cci_ea20.csv',  # Fixed: Now points to correct file
         'interpretation_notes': 'Level matters less than direction. Sustained weakness = demand risk. Sharp drops = early recession signal.'
     },
     
