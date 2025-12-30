@@ -273,8 +273,10 @@ class CycleAnalyzerV2:
             
             if 'rate' in name_lower or 'yield' in name_lower or 'spread' in name_lower:
                 unit = '%'
-            elif 'index' in name_lower:
+            elif 'index' in name_lower or 'sentiment' in name_lower:
                 unit = 'index'
+            elif 'confidence' in name_lower:
+                unit = 'balance'  # Balance indicators (e.g. -14.2 balance)
             elif display_value > 1000:
                 unit = 'level'
             else:

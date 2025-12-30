@@ -520,6 +520,22 @@ INDICATORS = {
         'csv_file': 'eurozone_data/eurostat_cci_ea20.csv',  # Fixed: Now points to correct file
         'interpretation_notes': 'Level matters less than direction. Sustained weakness = demand risk. Sharp drops = early recession signal.'
     },
+    'EA_INDUSTRIAL_CONF': {
+        'name': 'Industrial Confidence (EUR)',
+        'category': 'Sentiment',
+        'frequency': 'monthly',
+        'description': 'Manufacturer sentiment — production plans and demand expectations.',
+        'indicator_type': 'Leading',
+        'use_yoy': False,
+        'use_mom': False,
+        'trend_method': 'level',  # Required for TrendEngine
+        'type_tag': 'sentiment',  # Required for TrendEngine
+        'inverted': False,
+        'region': 'Eurozone',
+        'source': 'csv',
+        'csv_file': 'eurozone_data/eurostat_industrial_confidence_ea20.csv',
+        'interpretation_notes': 'Leading indicator for manufacturing cycle. Sharp drops often precede production cuts.'
+    },
     
     
     # COINCIDENT - Eurozone (6 indicators)
