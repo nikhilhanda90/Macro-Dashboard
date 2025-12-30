@@ -283,11 +283,18 @@ def load_decision_summary():
 
 @st.cache_data(ttl=3600)
 def load_technical_summary():
-    """Load technical indicators summary"""
+    """Load technical indicators summary - LIVE or from file"""
+    # Try live calculation first
+    live_data = fetch_eurusd_data_and_calculate_technicals()
+    if live_data:
+        return live_data
+    
+    # Fallback to pre-computed file if live fetch fails
     path = FX_VIEWS_ROOT / 'technical_outputs' / 'eurusd_technical_summary.json'
     if path.exists():
         with open(path, 'r') as f:
             return json.load(f)
+    
     return None
 
 @st.cache_data(ttl=3600)
@@ -307,6 +314,125 @@ def load_positioning_summary():
         return summary, history
     except:
         return None, None
+
+@st.cache_data(ttl=300)  # Cache for 5 minutes only
+def get_live_eurusd():
+    """Fetch live EURUSD spot rate from Yahoo Finance"""
+    try:
+        import yfinance as yf
+        ticker = yf.Ticker("EURUSD=X")
+        data = ticker.history(period="1d")
+        if not data.empty:
+            return round(data['Close'].iloc[-1], 4)
+    except:
+        pass
+    return None
+
+@st.cache_data(ttl=3600)  # Cache for 1 hour
+def fetch_eurusd_data_and_calculate_technicals():
+    """Fetch EURUSD data from Yahoo Finance and calculate all technical indicators"""
+    try:
+        import yfinance as yf
+        from datetime import datetime, timedelta
+        
+        # Fetch 2 years of daily data
+        ticker = yf.Ticker("EURUSD=X")
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=730)
+        
+        df = ticker.history(start=start_date, end=end_date, interval='1d')
+        if df.empty:
+            return None
+            
+        df = df[['Open', 'High', 'Low', 'Close', 'Volume']].copy()
+        
+        # Calculate indicators
+        # Moving Averages
+        df['SMA_50'] = df['Close'].rolling(window=50).mean()
+        df['SMA_100'] = df['Close'].rolling(window=100).mean()
+        df['SMA_200'] = df['Close'].rolling(window=200).mean()
+        
+        # RSI (14)
+        delta = df['Close'].diff()
+        gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
+        loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
+        rs = gain / loss
+        df['RSI'] = 100 - (100 / (1 + rs))
+        
+        # MACD (12, 26, 9)
+        exp1 = df['Close'].ewm(span=12, adjust=False).mean()
+        exp2 = df['Close'].ewm(span=26, adjust=False).mean()
+        df['MACD'] = exp1 - exp2
+        df['MACD_Signal'] = df['MACD'].ewm(span=9, adjust=False).mean()
+        df['MACD_Hist'] = df['MACD'] - df['MACD_Signal']
+        
+        # Bollinger Bands (20, 2)
+        df['BB_Middle'] = df['Close'].rolling(window=20).mean()
+        bb_std = df['Close'].rolling(window=20).std()
+        df['BB_Upper'] = df['BB_Middle'] + (bb_std * 2)
+        df['BB_Lower'] = df['BB_Middle'] - (bb_std * 2)
+        
+        # Get latest values
+        latest = df.iloc[-1]
+        spot = latest['Close']
+        
+        # Technical score calculation
+        score = 0
+        # Trend (MA alignment)
+        if latest['SMA_50'] > latest['SMA_200']:
+            score += 1
+        if latest['Close'] > latest['SMA_50']:
+            score += 1
+        # RSI momentum
+        if 40 < latest['RSI'] < 70:
+            score += 0.5
+        elif latest['RSI'] > 50:
+            score += 0.5
+        # MACD
+        if latest['MACD'] > latest['MACD_Signal']:
+            score += 1
+        
+        # Determine regime
+        if score >= 3:
+            regime = 'Bullish'
+        elif score >= 2:
+            regime = 'Neutral-Bullish'
+        elif score >= 1.5:
+            regime = 'Neutral'
+        elif score >= 1:
+            regime = 'Neutral-Bearish'
+        else:
+            regime = 'Bearish'
+        
+        # Build summary
+        summary = {
+            'spot': round(spot, 4),
+            'regime': regime,
+            'technical_score': round(score, 1),
+            'indicators': {
+                'RSI': round(latest['RSI'], 1),
+                'MACD': round(latest['MACD'], 4),
+                'MACD_Signal': round(latest['MACD_Signal'], 4),
+                'SMA_50': round(latest['SMA_50'], 4),
+                'SMA_200': round(latest['SMA_200'], 4),
+                'BB_Upper': round(latest['BB_Upper'], 4),
+                'BB_Lower': round(latest['BB_Lower'], 4)
+            },
+            'narrative': f"Price is {'above' if spot > latest['SMA_50'] else 'below'} 50-day MA. RSI at {latest['RSI']:.1f} indicates {'overbought' if latest['RSI'] > 70 else 'oversold' if latest['RSI'] < 30 else 'neutral'} conditions.",
+            'key_levels': [
+                {'Level': 'BB Upper', 'Value': round(latest['BB_Upper'], 4), 'Type': 'Resistance'},
+                {'Level': 'SMA 50', 'Value': round(latest['SMA_50'], 4), 'Type': 'Support' if spot > latest['SMA_50'] else 'Resistance'},
+                {'Level': 'SMA 200', 'Value': round(latest['SMA_200'], 4), 'Type': 'Support' if spot > latest['SMA_200'] else 'Resistance'},
+                {'Level': 'BB Lower', 'Value': round(latest['BB_Lower'], 4), 'Type': 'Support'}
+            ],
+            'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
+        return summary
+        
+    except Exception as e:
+        print(f"Error fetching technicals: {e}")
+        return None
 
 # =====================================================================
 # MAIN
@@ -541,8 +667,10 @@ with st.expander("## 2️⃣ Technicals", expanded=False):
             rsi = tech_data.get('indicators', {}).get('RSI', 0)
             st.metric("RSI", f"{rsi:.1f}")
         with col4:
-            spot = tech_data.get('spot', 0)
-            st.metric("Spot", f"{spot:.4f}")
+            # Use live spot rate if available, fallback to technical data spot
+            live_spot = get_live_eurusd()
+            spot = live_spot if live_spot else tech_data.get('spot', 0)
+            st.metric("Spot (Live)", f"{spot:.4f}")
         
         # Narrative
         narrative = tech_data.get('narrative', 'No narrative available.')
