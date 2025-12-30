@@ -110,7 +110,7 @@ class CycleAnalyzerV2:
             'region': old_config.get('region', 'US')
         }
     
-    def calculate_percentile(self, df, current_value=None, years_back=None):
+    def calculate_percentile(self, df, current_value=None, years_back=None, inverted=False):
         """
         Calculate the percentile rank of the current value
         
@@ -118,6 +118,7 @@ class CycleAnalyzerV2:
             df: DataFrame with 'date' and 'value' columns
             current_value: Value to rank (if None, uses latest value)
             years_back: Only use data from last N years (None = all history)
+            inverted: If True, flip percentile (high value = bad, e.g. VIX, unemployment)
             
         Returns:
             Percentile rank (0-100) or None
@@ -142,6 +143,11 @@ class CycleAnalyzerV2:
             return None
         
         percentile = (values < current_value).sum() / len(values) * 100
+        
+        # For inverted indicators (VIX, unemployment), flip the percentile
+        # High value should = low percentile (bad)
+        if inverted:
+            percentile = 100 - percentile
         
         return round(percentile, 1)
     
@@ -335,8 +341,9 @@ class CycleAnalyzerV2:
         current_date = df.sort_values('date')['date'].iloc[-1]
         
         # Calculate percentiles using the appropriate data
-        percentile_all = self.calculate_percentile(df_for_analysis)
-        percentile_recent = self.calculate_percentile(df_for_analysis, years_back=self.recent_years)
+        is_inverted = ind_config.get('inverted', False)
+        percentile_all = self.calculate_percentile(df_for_analysis, inverted=is_inverted)
+        percentile_recent = self.calculate_percentile(df_for_analysis, years_back=self.recent_years, inverted=is_inverted)
         
         # Get trend analysis using TrendEngine
         df_for_trend = df.copy()
@@ -397,8 +404,9 @@ class CycleAnalyzerV2:
         current_value = df['value'].iloc[-1]
         current_date = df['date'].iloc[-1]
         
-        percentile_all = self.calculate_percentile(df)
-        percentile_recent = self.calculate_percentile(df, years_back=self.recent_years)
+        is_inverted = kwargs.get('inverted', False)
+        percentile_all = self.calculate_percentile(df, inverted=is_inverted)
+        percentile_recent = self.calculate_percentile(df, years_back=self.recent_years, inverted=is_inverted)
         
         return {
             'current_value': round(current_value, 2),

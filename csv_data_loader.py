@@ -110,7 +110,16 @@ class CSVDataLoader:
             
             # Check for long format (most common)
             if 'TIME_PERIOD' in df.columns and 'OBS_VALUE' in df.columns:
-                # Long format - easy!
+                # Filter for specific indicator type if column exists (Eurostat often has multiple series)
+                if 'indic_bt' in df.columns:
+                    # For retail sales, use "Volume of sales" (real, inflation-adjusted)
+                    if 'retail' in filepath.lower():
+                        df = df[df['indic_bt'] == 'Volume of sales'].copy()
+                    # For industrial production, use "Production" indicator
+                    elif 'ip' in filepath.lower() or 'production' in filepath.lower():
+                        df = df[df['indic_bt'].str.contains('Production', case=False, na=False)].copy()
+                
+                # Long format - extract date and value
                 result = pd.DataFrame({
                     'date': pd.to_datetime(df['TIME_PERIOD'], errors='coerce'),
                     'value': pd.to_numeric(df['OBS_VALUE'], errors='coerce')
